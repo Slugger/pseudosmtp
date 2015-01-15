@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+    <display-name>pseudoSMTP</display-name>
+    <description>
+    	REST API of the psuedoSMTP app
+    </description>
+
+	<!-- Config values for pseudoSMTP -->
+
+	<!--
+	   Root dir to write logs to; also root dir for app database
+	   If specifying, best to use an absolute path
+	   Must be writable by user running app container
+		   
+	   DEFAULT: $HOME/.pseudosmtp
+	-->
+<!--
+	<context-param>
+		<param-name>psmtp.root</param-name>
+		<param-value>/some/path</param-value>
+	</context-param>
+-->
+	
+	<!--
+	  Bind address for the SMTP server
+		  
+	  DEFAULT: 0.0.0.0 (i.e. listen on all active interfaces)
+	-->
+<!--		
+	<context-param>
+		<param-name>psmtp.smtp.bind-address</param-name>
+		<param-value>0.0.0.0</param-value>
+	</context-param>
+-->
+	
+	<!--
+	  Port number for the SMTP server to listen on
+	  
+	  DEFAULT: 2525 (NOT 25, this is on purpose since this is a test SMTP server only!)
+	-->
+<!--
+	<context-param>
+		<param-name>psmtp.smtp.port</param-name>
+		<param-value>2525</param-value>
+	</context-param>
+-->
+		
+	<!--
+		Set the log level for the app log
+		This is log statements from pseudoSMTP written to app.log in psmtp.root
+		
+		DEFAULT: info
+	-->
+	<context-param>
+		<param-name>psmtp.log-level.app</param-name>
+		<param-value>trace</param-value>
+	</context-param>
+
+	<!--
+		Set the log level for the smtp log
+		This is log statements from the subetha SMTP server written to smtp.log in psmtp.root
+		When higher than info (i.e. debug or trace) then tonnes of output is logged so be
+		careful, though when you need it, it's nice to have when testing and debugging the
+		email functions of your application.
+		
+		DEFAULT: warn
+	-->
+	<context-param>
+		<param-name>psmtp.log-level.smtp</param-name>
+		<param-value>info</param-value>
+	</context-param>
+				    
+	<listener>
+		<listener-class>net.sf.pseudosmtp.j2ee.listeners.SmtpManager</listener-class>
+	</listener>
+	
+	<filter>
+		<filter-name>RestValidator</filter-name>
+		<filter-class>net.sf.pseudosmtp.j2ee.filters.RestRequestValidator</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>RestValidator</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
+	
+	<servlet>
+		<servlet-name>Jersey REST Service</servlet-name>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+		<!-- Register resources and providers under com.vogella.jersey.first package. -->
+		<init-param>
+			<param-name>jersey.config.server.provider.packages</param-name>
+			<param-value>net.sf.pseudosmtp.resources</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Jersey REST Service</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+</web-app> 
