@@ -25,9 +25,6 @@ import spock.lang.Stepwise
 abstract class PsmtpSpec extends Specification {
 	static { 
 		System.setProperty('psmtp.testing', 'true')
-		System.setProperty('psmtp.log-level.app', 'trace')
-		System.setProperty('psmtp.log-level.smtp', 'warn')
-		AppSettings.instance.init(MockServletContext.instance)
 		new SmtpManager().initLogging()
 	}
 	

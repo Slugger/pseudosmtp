@@ -42,10 +42,6 @@ abstract class PsmtpFvtSpec extends Specification {
 		sch.displayName = 'pseudoSMTP'
 		sch.addEventListener(new SmtpManager())
 		sch.addFilter(RestRequestValidator, '/api/*', EnumSet.allOf(DispatcherType))
-		sch.setInitParameter('psmtp.root', new File(new File(System.getProperty('user.home')), 'psmtp_test').absolutePath)
-		sch.setInitParameter('psmtp.smtp.bind-address', '127.0.0.1')
-		sch.setInitParameter('psmtp.log-level.app', 'trace')
-		sch.setInitParameter('psmtp.log-level.smtp', 'error')
 		sch.resourceBase = new File('src/main/webapp/WEB-INF/groovy')
 		_SERVER.handler = sch
 		

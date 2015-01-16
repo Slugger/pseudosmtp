@@ -13,12 +13,13 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
+import net.sf.pseudosmtp.AppSettings
 import net.sf.pseudosmtp.datastore.DataStore
 
 if(isAuth(headers.Authorization)) {
 	def method = request.method.toUpperCase()
 	if(method == 'GET') {
-		def get = DataStore.instance.&getSetting
+		def config = AppSettings.instance
 		html.html {
 			head {
 				title('pseudoSMTP Configuration')
@@ -27,26 +28,26 @@ if(isAuth(headers.Authorization)) {
 				form(method: 'POST', action: request.requestURL) {
 					div {
 						span('New admin password: ')
-						input(type: 'password', name: 'pwd', value: get('adminPwd'))
+						input(type: 'password', name: 'pwd', value: config.adminPassword)
 					}
 					div {
 						span('App root dir: ')
-						input(type: 'text', name: 'app_root', value: get('appRoot', new File(new File(System.getProperty('user.home')), '.pseudosmtp').absolutePath))
+						input(type: 'text', name: 'app_root', value: config.appRoot.toString())
 					}		
 					div {
 						span('SMTP bind address: ')
-						input(type: 'text', name: 'bind_addr', value: get('smtpBindAddr', '0.0.0.0'))
+						input(type: 'text', name: 'bind_addr', value: config.smtpBindAddressString)
 					}
 					div {
 						span('SMTP port: ')
-						input(type: 'text', name: 'port', value: get('smtpPort', 2525.toString()))
+						input(type: 'text', name: 'port', value: config.smtpPort.toString())
 					}
 					div {
 						span('App log level: ')
 						select(name: 'app_lvl') {
 							['error', 'warn', 'info', 'debug', 'trace'].each {
 								def opts = [value: it]
-								if(it == get('appLogLevel', 'info').toLowerCase())
+								if(it == config.appLogLevel.toString().toLowerCase())
 									opts['selected'] = 'selected'
 								option(opts, it.toUpperCase())
 							}
@@ -57,7 +58,7 @@ if(isAuth(headers.Authorization)) {
 						select(name: 'smtp_lvl') {
 							['error', 'warn', 'info', 'debug', 'trace'].each {
 								def opts = [value: it]
-								if(it == get('smtpLogLevel', 'warn').toLowerCase())
+								if(it == config.smtpLogLevel.toString().toLowerCase())
 									opts['selected'] = 'selected'
 								option(opts, it.toUpperCase())
 							}
@@ -73,14 +74,27 @@ if(isAuth(headers.Authorization)) {
 			}
 		}
 	} else if(method == 'POST') {
-		def set = DataStore.instance.&setSetting
+		def config = AppSettings.instance
+		
 		def val = params.pwd
 		if(val)
-			set('adminPwd', val)
+			config.adminPassword = val
 		
 		val = params.bind_addr
 		if(val)
-			set('smtpBindAddr', val)
+			config.smtpBindAddress = val
+			
+		val = params.app_root
+		if(val)
+			config.appRoot = val
+		
+		val = params.port
+		if(val && val ==~ /\d+/)
+			config.smtpPort = val
+		
+		config.appLogLevel = params.app_lvl
+		config.smtpLogLevel = params.smtp_lvl
+		
 		response.sendRedirect(request.requestURL.toString())
 	}
 } else {

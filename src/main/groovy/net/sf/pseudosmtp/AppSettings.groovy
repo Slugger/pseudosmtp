@@ -15,35 +15,85 @@ Copyright 2015 Battams, Derek
 */
 package net.sf.pseudosmtp
 
-import javax.servlet.ServletContext
+import net.sf.pseudosmtp.datastore.DataStore
 
 import org.apache.log4j.Level
 
 @Singleton
 class AppSettings {
-
-	File appRoot
-	InetAddress smtpAddress
+	static private final String APP_ROOT = 'appRoot'
+	static private final String BIND_ADDR = 'smtpBindAddr'
+	static private final String SMTP_PORT = 'smtpPort'
+	static private final String APP_LOG_LVL = 'appLogLevel'
+	static private final String SMTP_LOG_LVL = 'smtpLogLevel'
+	static private final String ADMIN_PWD = 'adminPwd'
+	
+	InetAddress smtpBindAddress
 	int smtpPort
 	Level appLogLevel
 	Level smtpLogLevel
-	
-	void init(ServletContext sc) {
-		appRoot = new File(sc.getInitParameter('psmtp.root') ?: new File(new File(System.getProperty('user.home')), '.pseudosmtp').absolutePath)
-		def addr = sc.getInitParameter('psmtp.smtp.bind-address')
-		try {
-			smtpAddress =  addr ? InetAddress.getByName(addr) : null
-		} catch(Throwable t) {
-			smtpAddress = null
-		}
-		smtpPort = sc.getInitParameter('psmtp.smtp.port')?.toInteger() ?: 2525
-		appLogLevel = Level.toLevel(sc.getInitParameter('psmtp.log-level.app')?.toUpperCase(), Level.INFO)
-		smtpLogLevel = Level.toLevel(sc.getInitParameter('psmtp.log-level.smtp')?.toUpperCase(), Level.WARN)
+	String adminPassword
+
+	String getAdminPassword() {
+		return DataStore.instance.getSetting(ADMIN_PWD, 'admin')
 	}
 	
-	File setAppRoot() { throw new UnsupportedOperationException('Read only property!') }
-	String setSmtpAddress() { throw new UnsupportedOperationException('Read only property!') }
-	int setSmtpPort() { throw new UnsupportedOperationException('Read only property!') }
-	Level setAppLogLevel() { throw new UnsupportedOperationException('Read only property!') }
-	Level setSmtpLogLevel() { throw new UnsupportedOperationException('Read only property!') }
+	void setAdminPassword(String pwd) {
+		DataStore.instance.setSetting(ADMIN_PWD, pwd)
+	}
+	
+	InetAddress getSmtpBindAddress() {
+		return InetAddress.getByName(DataStore.instance.getSetting(BIND_ADDR, '0.0.0.0'))
+	}
+	
+	String getSmtpBindAddressString() {
+		def str = getSmtpBindAddress().toString()
+		return str.substring(str.indexOf('/') + 1)
+	}
+	
+	void setSmtpBindAddress(InetAddress addr) {
+		def str = addr.toString()
+		str = addr.substring(str.indexOf('/') + 1)
+		setSmtpBindAddress(str)
+	}
+	
+	void setSmtpBindAddress(String addr) {
+		DataStore.instance.setSetting(BIND_ADDR, addr)
+	}
+	
+	int getSmtpPort() {
+		return DataStore.instance.getSetting(SMTP_PORT, '2525').toInteger()
+	}
+	
+	void setSmtpPort(int port) {
+		setSmtpPort(port.toString())
+	}
+	
+	void setSmtpPort(String port) {
+		DataStore.instance.setSetting(SMTP_PORT, port)
+	}
+	
+	Level getAppLogLevel() {
+		return Level.toLevel(DataStore.instance.getSetting(APP_LOG_LVL, System.getProperty('psmtp.testing') ? 'trace' : 'info'))
+	}
+	
+	void setAppLogLevel(Level lvl) {
+		setAppLogLevel(lvl.toString())
+	}
+	
+	void setAppLogLevel(String lvl) {
+		DataStore.instance.setSetting(APP_LOG_LVL, lvl)
+	}
+
+	Level getSmtpLogLevel() {
+		return Level.toLevel(DataStore.instance.getSetting(SMTP_LOG_LVL, 'error'))
+	}
+	
+	void setSmtpLogLevel(Level lvl) {
+		setSmtpLogLevel(lvl.toString())
+	}
+	
+	void setSmtpLogLevel(String lvl) {
+		DataStore.instance.setSetting(SMTP_LOG_LVL, lvl)
+	}
 }

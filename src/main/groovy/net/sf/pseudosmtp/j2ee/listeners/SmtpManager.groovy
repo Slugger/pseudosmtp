@@ -23,7 +23,6 @@ import net.sf.pseudosmtp.AppSettings
 import net.sf.pseudosmtp.datastore.DataStore
 import net.sf.pseudosmtp.smtp.PsmtpMessageHandlerFactory
 
-import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.apache.log4j.PatternLayout
 import org.apache.log4j.RollingFileAppender
@@ -39,7 +38,7 @@ class SmtpManager implements ServletContextListener {
 	
 	private initLogging() {
 		def layout = new PatternLayout('%-5p %d{yyyy-MM-dd HH:mm:ss.SSS} [%c{1}] %m%n')
-		def appender = new RollingFileAppender(layout, new File(AppSettings.instance.appRoot, 'app.log').absolutePath)
+		def appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'app.log').absolutePath)
 		appender.maxBackupIndex = 10
 		appender.maxFileSize = '5MB'
 		def l = Logger.getRootLogger()
@@ -52,7 +51,7 @@ class SmtpManager implements ServletContextListener {
 		l = Logger.getLogger('org.subethamail')
 		l.removeAllAppenders()
 		l.additive = false
-		appender = new RollingFileAppender(layout, new File(AppSettings.instance.appRoot, 'smtp.log').absolutePath)
+		appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'smtp.log').absolutePath)
 		appender.maxBackupIndex = 2
 		appender.maxFileSize = '15MB'
 		l.addAppender(appender)
@@ -60,7 +59,7 @@ class SmtpManager implements ServletContextListener {
 	}
 
 	private void startSmtpServer() {
-		SMTP_SRV.bindAddress = AppSettings.instance.smtpAddress
+		SMTP_SRV.bindAddress = AppSettings.instance.smtpBindAddress
 		SMTP_SRV.port = AppSettings.instance.smtpPort
 		SMTP_SRV.start()
 		LOG.info "SMTP server listening on ${SMTP_SRV.bindAddress ?: '*'}:$SMTP_SRV.port"
@@ -71,7 +70,6 @@ class SmtpManager implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		if(sce.servletContext.servletContextName == 'pseudoSMTP' && !svcsStarted) {
 			svcsStarted = true
-			AppSettings.instance.init(sce.servletContext)
 			initLogging()
 			startSmtpServer()
 		}

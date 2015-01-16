@@ -23,7 +23,6 @@ import java.sql.SQLException
 import javax.mail.Message.RecipientType
 import javax.mail.internet.MimeMessage
 
-import net.sf.pseudosmtp.AppSettings
 import net.sf.pseudosmtp.j2ee.listeners.SmtpManager
 
 import org.apache.commons.io.FilenameUtils
@@ -38,21 +37,23 @@ class DataStore {
 		return INSTANCE
 	}
 
-	static private final String DB_NAME = "${Boolean.parseBoolean(System.getProperty('psmtp.testing')) ? 'memory:' : ''}/${FilenameUtils.separatorsToUnix(FilenameUtils.getPath(new File(AppSettings.instance.appRoot, 'psmtp').absolutePath))}psmtp"
+	static File getAppRoot() { return new File(System.getProperty('psmtp.root') ?: new File(new File(System.getProperty('user.home')), '.pseudosmtp').absolutePath) }
+	static private final String DB_NAME = "${Boolean.parseBoolean(System.getProperty('psmtp.testing')) ? 'memory:' : ''}/${FilenameUtils.separatorsToUnix(FilenameUtils.getPath(getAppRoot().absolutePath))}psmtp"
+	
 
 	synchronized static void shutdown() {
-		if(INSTANCE?.sql)
+		if(INSTANCE?.sql) {
 			try { INSTANCE.sql.close() } catch(Throwable t) {}
-		INSTANCE = null
-			
-		try {
-			Sql.newInstance("jdbc:derby:${DB_NAME};${DB_NAME.startsWith('memory:') ? 'drop' : 'shutdown'}=true")
-		} catch(SQLException e) {
-			if(false && e.SQLState != '08006') {
-				log.error 'SQLError shutting down db!', e
-				throw e
+			try {
+				Sql.newInstance("jdbc:derby:${DB_NAME};${DB_NAME.startsWith('memory:') ? 'drop' : 'shutdown'}=true")
+			} catch(SQLException e) {
+				if(e.SQLState != '08006') {
+					log.error 'SQLError shutting down db!', e
+					throw e
+				}
 			}
 		}
+		INSTANCE = null
 		log.info 'Database shutdown completed.'
 	}
 
