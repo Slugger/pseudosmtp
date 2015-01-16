@@ -83,4 +83,13 @@ class DatastoreTests extends PsmtpSpec {
 		then: 'null is returned'
 			msg == null
 	}
+	
+	def 'Settings can be written and read'() {
+		when:
+			def ds = DataStore.instance
+			assert ds.getSetting('foo') == null
+			ds.setSetting('foo', 'bar')
+		then:
+			'bar' == ds.getSetting('foo')
+	}	
 }

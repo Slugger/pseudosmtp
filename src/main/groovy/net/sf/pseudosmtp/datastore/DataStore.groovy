@@ -132,6 +132,34 @@ class DataStore {
 		return data ? buildMsg(data, bcc) : null
 	}
 	
+	synchronized String getSetting(String name, String defaultValue = null) {
+		def qry = "SELECT value FROM settings WHERE name = $name"
+		if(log.isTraceEnabled()) {
+			def params = sql.getParameters(qry)
+			def qryStr = sql.asSql(qry, params)
+			log.trace "$qryStr $params"
+		}
+		return sql.firstRow(qry)?.value ?: defaultValue
+	}
+	
+	synchronized void setSetting(String name, String value) {
+		def delQry = "DELETE FROM settings WHERE name = $name"
+		def insQry = "INSERT INTO settings (name, value) VALUES ($name, $value)"
+		if(log.isTraceEnabled()) {
+			def params = sql.getParameters(delQry)
+			def qryStr = sql.asSql(delQry, params)
+			log.trace "$qryStr $params"
+			params = sql.getParameters(insQry)
+			qryStr = sql.asSql(insQry, params)
+			log.trace "$qryStr $params"
+		}
+		sql.withTransaction {
+			sql.execute delQry
+			if(sql.executeUpdate(insQry) != 1)
+				throw new RuntimeException('DBError writing setting value')
+		}
+	}
+	
 	private InputStream buildMsg(InputStream data, List bcc) {
 		if(!bcc || bcc.size() == 0) return data
 		MimeMessage msg = new MimeMessage(SmtpManager.SMTP_SESSION, data)
