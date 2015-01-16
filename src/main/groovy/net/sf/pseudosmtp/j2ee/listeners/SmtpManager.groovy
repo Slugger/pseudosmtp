@@ -30,13 +30,21 @@ import org.subethamail.smtp.server.SMTPServer
 
 class SmtpManager implements ServletContextListener {
 
+	static private SmtpManager SELF = null
+	
 	static private volatile boolean svcsStarted = false
-	static private final SMTPServer SMTP_SRV = new SMTPServer(new PsmtpMessageHandlerFactory())
+	static private SMTPServer smtpSrv
 	static final Session SMTP_SESSION = Session.getDefaultInstance(new Properties())
 	
+	static void restartSmtpServer() {
+		SELF.initLogging()
+		SELF.stopSmtpServer()
+		SELF.startSmtpServer()
+	}
+
 	private Logger LOG
 	
-	private initLogging() {
+	void initLogging() {
 		def layout = new PatternLayout('%-5p %d{yyyy-MM-dd HH:mm:ss.SSS} [%c{1}] %m%n')
 		def appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'app.log').absolutePath)
 		appender.maxBackupIndex = 10
@@ -58,16 +66,26 @@ class SmtpManager implements ServletContextListener {
 		l.level = AppSettings.instance.smtpLogLevel
 	}
 
+	private void stopSmtpServer() {
+		if(smtpSrv?.isRunning()) {
+			smtpSrv.stop()
+			LOG.info 'SMTP server stopped!'
+		} else
+			LOG.error 'SMTP server NOT stopped!'
+	}
+	
 	private void startSmtpServer() {
-		SMTP_SRV.bindAddress = AppSettings.instance.smtpBindAddress
-		SMTP_SRV.port = AppSettings.instance.smtpPort
-		SMTP_SRV.start()
-		LOG.info "SMTP server listening on ${SMTP_SRV.bindAddress ?: '*'}:$SMTP_SRV.port"
+		smtpSrv = new SMTPServer(new PsmtpMessageHandlerFactory())
+		smtpSrv.bindAddress = AppSettings.instance.smtpBindAddress
+		smtpSrv.port = AppSettings.instance.smtpPort
+		smtpSrv.start()
+		LOG.info "SMTP server listening on ${smtpSrv.bindAddress ?: '*'}:$smtpSrv.port"
 	}
 	
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		SELF = this
 		if(sce.servletContext.servletContextName == 'pseudoSMTP' && !svcsStarted) {
 			svcsStarted = true
 			initLogging()
@@ -79,11 +97,7 @@ class SmtpManager implements ServletContextListener {
 	public void contextDestroyed(ServletContextEvent sce) {
 		if(sce.servletContext.servletContextName == 'pseudoSMTP') {
 			svcsStarted = false
-			if(SMTP_SRV?.isRunning()) {
-				SMTP_SRV.stop()
-				LOG.info 'SMTP server stopped!'
-			} else
-				LOG.error 'SMTP server NOT stopped!'
+			stopSmtpServer()
 			DataStore.shutdown()
 		}
 	}

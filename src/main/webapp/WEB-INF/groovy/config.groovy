@@ -15,6 +15,7 @@
 */
 import net.sf.pseudosmtp.AppSettings
 import net.sf.pseudosmtp.datastore.DataStore
+import net.sf.pseudosmtp.j2ee.listeners.SmtpManager
 
 if(isAuth(headers.Authorization)) {
 	def method = request.method.toUpperCase()
@@ -30,10 +31,6 @@ if(isAuth(headers.Authorization)) {
 						span('New admin password: ')
 						input(type: 'password', name: 'pwd', value: config.adminPassword)
 					}
-					div {
-						span('App root dir: ')
-						input(type: 'text', name: 'app_root', value: config.appRoot.toString())
-					}		
 					div {
 						span('SMTP bind address: ')
 						input(type: 'text', name: 'bind_addr', value: config.smtpBindAddressString)
@@ -82,18 +79,15 @@ if(isAuth(headers.Authorization)) {
 		
 		val = params.bind_addr
 		if(val)
-			config.smtpBindAddress = val
+			config.setSmtpBindAddress(val)
 			
-		val = params.app_root
-		if(val)
-			config.appRoot = val
-		
 		val = params.port
 		if(val && val ==~ /\d+/)
-			config.smtpPort = val
+			config.setSmtpPort(val)
 		
-		config.appLogLevel = params.app_lvl
-		config.smtpLogLevel = params.smtp_lvl
+		config.setAppLogLevel(params.app_lvl)
+		config.setSmtpLogLevel(params.smtp_lvl)
+		SmtpManager.restartSmtpServer()
 		
 		response.sendRedirect(request.requestURL.toString())
 	}
