@@ -40,6 +40,7 @@ dependencies {
 	testCompile 'org.spockframework:spock-maven:0.7-groovy-2.0'
 	testCompile 'org.eclipse.jetty:jetty-server:8.1.16.v20140903'
 	testCompile 'org.eclipse.jetty:jetty-servlet:8.1.16.v20140903'
+	testCompile 'org.eclipse.jetty:jetty-jsp:8.1.16.v20140903'
 	testCompile 'commons-net:commons-net:3.3'
 	testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

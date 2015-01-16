@@ -15,7 +15,7 @@
 */
 package net.sf.pseudosmtp.test
 
-import groovyx.net.http.RESTClient
+import groovy.servlet.GroovyServlet
 
 import javax.servlet.DispatcherType
 
@@ -46,11 +46,15 @@ abstract class PsmtpFvtSpec extends Specification {
 		sch.setInitParameter('psmtp.smtp.bind-address', '127.0.0.1')
 		sch.setInitParameter('psmtp.log-level.app', 'trace')
 		sch.setInitParameter('psmtp.log-level.smtp', 'error')
+		sch.resourceBase = new File('src/main/webapp/WEB-INF/groovy')
 		_SERVER.handler = sch
 		
 		ServletHolder holder = new ServletHolder(ServletContainer)
 		holder.setInitParameter('jersey.config.server.provider.packages', 'net.sf.pseudosmtp.resources')
 		sch.addServlet(holder, '/api/*')
+		
+		holder = new ServletHolder(GroovyServlet)
+		sch.addServlet(holder, '*.groovy')
 		
 		_SERVER.start()
 		while(!_SERVER.started)
