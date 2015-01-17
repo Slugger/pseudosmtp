@@ -69,7 +69,7 @@ class SmtpManager implements ServletContextListener {
 		boolean isTesting = Boolean.parseBoolean(System.getProperty('psmtp.testing'))
 		def isEmbedded = {
 			try {
-				Class.forName('com.github.pseudosmtp.standalone.Launcher')
+				Class.forName('com.github.pseudosmtp.standalone.Main')
 				true
 			} catch(ClassNotFoundException) {
 				false

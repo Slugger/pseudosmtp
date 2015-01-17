@@ -47,7 +47,7 @@ dependencies {
 sourceSets {
 	main {
 		groovy {
-			exclude '**/com/github/pseudosmtp/standalone/**'
+			exclude '**/com/github/pseudosmtp/standalone/Main*'
 		}
 	}
 }
