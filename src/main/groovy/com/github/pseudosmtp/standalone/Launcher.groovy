@@ -28,14 +28,14 @@ import com.github.pseudosmtp.j2ee.filters.RestRequestValidator
 import com.github.pseudosmtp.j2ee.listeners.SmtpManager
 
 final class Launcher {
-
+	static private Server SERVER
+	
 	static main(args) {
 		def opts = parseCmdLine(args)
 		if(!opts.h) {
-			final Server srv = buildServer(opts.i ? opts.i.toInteger() : 8080, opts.c ?: '/', opts.r)
-			srv.start()
+			startServer(opts.i ? opts.i.toInteger() : 8080, opts.c ?: '/', opts.r ?: null)
 			Runtime.runtime.addShutdownHook {
-				srv.stop()
+				stopServer()
 			}
 		}
 	}
@@ -52,8 +52,15 @@ final class Launcher {
 		return opts
 	}
 	
-	static private Server buildServer(int port, String contextPath, String resourceBase) {
-		Server srv = new Server(port)
+	static private void stopServer() {
+		if(SERVER?.isRunning()) {
+			println 'Shutting down embedded Jetty...'
+			SERVER.stop()
+		}
+	}
+	
+	static private void startServer(int port, String contextPath, String resourceBase) {
+		SERVER = new Server(port)
 		
 		ServletContextHandler sch = new ServletContextHandler(ServletContextHandler.SESSIONS)
 		sch.contextPath = contextPath
@@ -62,7 +69,7 @@ final class Launcher {
 		sch.addFilter(RestRequestValidator, '/api/*', EnumSet.allOf(DispatcherType))
 		if(resourceBase)
 			sch.resourceBase = new File(resourceBase)
-		srv.handler = sch
+		SERVER.handler = sch
 		
 		ServletHolder holder = new ServletHolder(ServletContainer)
 		holder.setInitParameter('jersey.config.server.provider.packages', 'com.github.pseudosmtp.resources')
@@ -70,7 +77,7 @@ final class Launcher {
 		
 		holder = new ServletHolder(GroovyServlet)
 		sch.addServlet(holder, '*.groovy')
-
-		return srv
+		
+		SERVER.start()
 	}
 }

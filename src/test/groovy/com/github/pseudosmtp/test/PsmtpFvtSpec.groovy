@@ -37,14 +37,10 @@ abstract class PsmtpFvtSpec extends Specification {
 	static {
 		System.setProperty('psmtp.testing', 'true')
 
-		final Server _SERVER = Launcher.buildServer(10001, '/', new File('src/main/webapp/WEB-INF/groovy').absolutePath)
-		
-		_SERVER.start()
-		while(!_SERVER.started)
-			sleep 1000
-			
+		Launcher.startServer(10001, '/', new File('src/main/webapp/WEB-INF/groovy').absolutePath)
+					
 		Runtime.runtime.addShutdownHook {
-			_SERVER?.stop()
+			Launcher.stopServer()
 		}
 	}
 	

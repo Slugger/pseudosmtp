@@ -13,11 +13,11 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-import net.sf.pseudosmtp.AppSettings
-import net.sf.pseudosmtp.datastore.DataStore
-import net.sf.pseudosmtp.j2ee.listeners.SmtpManager
+import com.github.pseudosmtp.AppSettings
+import com.github.pseudosmtp.j2ee.helpers.BasicAuthHelper
+import com.github.pseudosmtp.j2ee.listeners.SmtpManager
 
-if(isAuth(headers.Authorization)) {
+if(BasicAuthHelper.isRequesterAdmin(request)) {
 	def method = request.method.toUpperCase()
 	if(method == 'GET') {
 		def config = AppSettings.instance
@@ -94,14 +94,4 @@ if(isAuth(headers.Authorization)) {
 } else {
 	response.setHeader('WWW-Authenticate', 'Basic realm="pseudoSMTP"')
 	response.sendError(401, 'Authentication Required')
-}
-
-boolean isAuth(String auth) {
-	if(auth && auth.startsWith('Basic ')) {
-		def enc = auth.substring(6)
-		def dec = new String(enc.decodeBase64())
-		def creds = dec.split(':', 2)
-		return creds[0].toLowerCase() == 'admin' && creds[1] == DataStore.instance.getSetting('adminPwd', 'admin')
-	} else
-		return false
 }
