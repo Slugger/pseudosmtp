@@ -66,32 +66,46 @@ class SmtpManager implements ServletContextListener {
 		l.addAppender(appender)
 		l.level = AppSettings.instance.smtpLogLevel
 		
-		// Write Jetty logs elsewhere
-		l = Logger.getLogger('org.eclipse.jetty')
-		l.removeAllAppenders()
-		l.additive = false
-		appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'jetty.log').absolutePath)
-		appender.maxBackupIndex = 5
-		appender.maxFileSize = '5MB'
-		l.addAppender(appender)
-		l.level = AppSettings.instance.jettyLogLevel
+		boolean isTesting = Boolean.parseBoolean(System.getProperty('psmtp.testing'))
+		def isEmbedded = {
+			try {
+				Class.forName('com.github.pseudosmtp.standalone.Launcher')
+				true
+			} catch(ClassNotFoundException) {
+				false
+			}
+		}
 		
-		// Write HttpClient logs elsewhere
-		appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'httpc.log').absolutePath)
-		appender.maxBackupIndex = 3
-		appender.maxFileSize = '25MB'
+		if(isTesting || isEmbedded()) {
+			// Write Jetty logs elsewhere
+			l = Logger.getLogger('org.eclipse.jetty')
+			l.removeAllAppenders()
+			l.additive = false
+			appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'jetty.log').absolutePath)
+			appender.maxBackupIndex = 5
+			appender.maxFileSize = '5MB'
+			l.addAppender(appender)
+			l.level = AppSettings.instance.jettyLogLevel
+		}
+		
+		if(isTesting) {
+			// Write HttpClient logs elsewhere
+			appender = new RollingFileAppender(layout, new File(DataStore.appRoot, 'httpc.log').absolutePath)
+			appender.maxBackupIndex = 3
+			appender.maxFileSize = '25MB'
 
-		l = Logger.getLogger('org.apache.http')
-		l.removeAllAppenders()
-		l.additive = false
-		l.addAppender(appender)
-		l.level = Level.DEBUG
-		
-		l = Logger.getLogger('groovyx.net.http')
-		l.removeAllAppenders()
-		l.additive = false
-		l.addAppender(appender)
-		l.level = Level.DEBUG		
+			l = Logger.getLogger('org.apache.http')
+			l.removeAllAppenders()
+			l.additive = false
+			l.addAppender(appender)
+			l.level = Level.DEBUG
+
+			l = Logger.getLogger('groovyx.net.http')
+			l.removeAllAppenders()
+			l.additive = false
+			l.addAppender(appender)
+			l.level = Level.DEBUG
+		}		
 	}
 
 	private void stopSmtpServer() {

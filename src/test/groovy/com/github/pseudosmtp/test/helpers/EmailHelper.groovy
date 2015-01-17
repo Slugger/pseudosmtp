@@ -21,15 +21,15 @@ import javax.mail.Message.RecipientType
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
+import com.github.pseudosmtp.test.PsmtpFvtSpec
+
 class EmailHelper {
-	static private final String SMTP_HOST = 'localhost'
-	static private final int SMTP_PORT = 2525
 	static private final Session SMTP_SESSION
 	
 	static {
 		def smtpProps = new Properties()
-		smtpProps.setProperty('mail.smtp.host', SMTP_HOST)
-		smtpProps.setProperty('mail.smtp.port', SMTP_PORT.toString())
+		smtpProps.setProperty('mail.smtp.host', PsmtpFvtSpec.EXT_HOST)
+		smtpProps.setProperty('mail.smtp.port', PsmtpFvtSpec.SMTP_PORT.toString())
 		SMTP_SESSION = Session.getInstance(smtpProps)
 	}
 	

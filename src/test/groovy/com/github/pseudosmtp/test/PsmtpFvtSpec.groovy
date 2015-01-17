@@ -15,39 +15,53 @@
 */
 package com.github.pseudosmtp.test
 
-import groovy.servlet.GroovyServlet
-
-import javax.servlet.DispatcherType
-
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.ServletContextHandler
-import org.eclipse.jetty.servlet.ServletHolder
-import org.glassfish.jersey.servlet.ServletContainer
-
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 
 import com.github.pseudosmtp.datastore.DataStore
-import com.github.pseudosmtp.j2ee.filters.RestRequestValidator
-import com.github.pseudosmtp.j2ee.listeners.SmtpManager
 import com.github.pseudosmtp.standalone.Launcher
 
 abstract class PsmtpFvtSpec extends Specification {
+	static private final boolean USE_EXT_HOST = Boolean.parseBoolean(System.getProperty('psmtp.testing.external')) 
+	static final String EXT_HOST
+	static final String WEB_CONTEXT
+	static final int WEB_PORT
+	static final int SMTP_PORT
+	static final String MY_IP
+	
 	static {
 		System.setProperty('psmtp.testing', 'true')
+		if(!USE_EXT_HOST) {
+			EXT_HOST = 'localhost'
+			WEB_PORT = 10001
+			SMTP_PORT = 2525
+			MY_IP = 'localhost'
 
-		Launcher.startServer(10001, '/', new File('src/main/webapp/WEB-INF/groovy').absolutePath)
-					
-		Runtime.runtime.addShutdownHook {
-			Launcher.stopServer()
+			Launcher.startServer(WEB_PORT, '/', new File('src/main/webapp/WEB-INF/groovy').absolutePath)
+
+			Runtime.runtime.addShutdownHook {
+				Launcher.stopServer()
+			}
+		} else {
+			EXT_HOST = System.getProperty('psmtp.testing.host')
+			WEB_PORT = System.getProperty('psmtp.testing.port.web').toInteger()
+			SMTP_PORT = System.getProperty('psmtp.testing.port.smtp').toInteger()
+			WEB_CONTEXT = System.getProperty('psmtp.testing.web.context')
+			def myIp = InetAddress.localHost.toString()
+			myIp = myIp.substring(myIp.indexOf('/') + 1)
+			MY_IP = myIp
 		}
 	}
 	
 	@Shared PsmtpRestClient restClnt
 	
 	def setupSpec() {
-		restClnt = new PsmtpRestClient()
+		if(!USE_EXT_HOST)
+			restClnt = new PsmtpRestClient()
+		else {
+			restClnt = new PsmtpRestClient("http://$EXT_HOST:$WEB_PORT/${WEB_CONTEXT}api/", MY_IP)
+		}
 	}
 	
 	boolean isStepwiseSpec() {
@@ -55,7 +69,11 @@ abstract class PsmtpFvtSpec extends Specification {
 	}
 	
 	def cleanup() {
-		if(!isStepwiseSpec())
-			DataStore.instance.shutdown()
+		if(!isStepwiseSpec()) {
+			if(!PsmtpFvtSpec.USE_EXT_HOST)
+				DataStore.instance.shutdown()
+			else
+				restClnt.deleteAll()
+		}
 	}
 }

@@ -28,12 +28,13 @@ class SmtpFunctionalTests extends PsmtpFvtSpec {
 	
 	static { // Ensure the SMTP server is alive
 		def smtpClnt = new SMTPClient()
-		smtpClnt.connect(EmailHelper.SMTP_HOST, EmailHelper.SMTP_PORT)
+		smtpClnt.connect(PsmtpFvtSpec.EXT_HOST, PsmtpFvtSpec.SMTP_PORT)
 		if(!SMTPReply.isPositiveCompletion(smtpClnt.getReplyCode()))
 			throw new RuntimeException('SMTP server appears not to be running')
 		smtpClnt.sendNoOp()
 		if(!SMTPReply.isPositiveCompletion(smtpClnt.getReplyCode()))
 			throw new RuntimeException("SMTP server rejected NOOP: ${smtpClnt.getReplyString()}")
+		smtpClnt.sendCommand('QUIT')
 		smtpClnt.disconnect()
 	}
 			
@@ -41,9 +42,10 @@ class SmtpFunctionalTests extends PsmtpFvtSpec {
 		when: 'an email is sent'
 			assert restClnt.getAll().size() == 0
 			EmailHelper.sendQuickMessage('sender@localhost.com', 'Test Message', 'A test message.', ['receiver@locahost.com'])
+			def msgs = restClnt.getAll()
 		then: 'the email is stored'
-			restClnt.getAll().size() == 1
-			restClnt[1] != null
+			msgs.size() == 1
+			restClnt[msgs[0].id] != null
 	}
 	
 	def 'Ensure multiple emails are properly stored'() {
@@ -52,11 +54,12 @@ class SmtpFunctionalTests extends PsmtpFvtSpec {
 			(1..5).each {
 				EmailHelper.sendQuickMessage("sender$it@localhost.com", "Test Message #$it", "This is test message #$it.", ["receiver$it@localhost.com"])
 			}
+			def msgs = restClnt.getAll()
 		then: 'all emails are processed, stored and can be read back'
-			restClnt.getAll().size() == 5
-			(1..5).each {
-				def msg = new MimeMessage(SmtpManager.SMTP_SESSION, restClnt[it])
-				assert msg.content.trim() == "This is test message #$it."
+			msgs.size() == 5
+			msgs.eachWithIndex { it, i ->
+				def msg = new MimeMessage(SmtpManager.SMTP_SESSION, restClnt[it.id])
+				assert msg.content.trim() == "This is test message #${i + 1}."
 			}
 	}
 }

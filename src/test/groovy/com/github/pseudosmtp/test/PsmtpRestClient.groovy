@@ -63,4 +63,12 @@ class PsmtpRestClient {
 			throw e
 		}
 	}
+	
+	void deleteAll(String clntScope = null) {
+		clnt.delete([path: 'messages/', query: [clnt: clntScope ?: defaultScope]])
+	}
+	
+	boolean delete(int id, String clntScope = null) {
+		clnt.delete([path: "messages/$id", query: [clnt: clntScope ?: defaultScope]])
+	}
 }
