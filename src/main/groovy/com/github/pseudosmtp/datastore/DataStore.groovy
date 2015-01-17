@@ -38,7 +38,7 @@ class DataStore {
 	}
 
 	static File getAppRoot() { return new File(System.getProperty('psmtp.root') ?: new File(new File(System.getProperty('user.home')), '.pseudosmtp').absolutePath) }
-	static private final String DB_NAME = "${Boolean.parseBoolean(System.getProperty('psmtp.testing')) ? 'memory:' : ''}/${FilenameUtils.separatorsToUnix(FilenameUtils.getPath(getAppRoot().absolutePath))}psmtp"
+	static private final String DB_NAME = "${Boolean.parseBoolean(System.getProperty('psmtp.testing')) ? 'memory:' : ''}/${FilenameUtils.separatorsToUnix(FilenameUtils.getPath("${getAppRoot().absolutePath}/throwaway"))}psmtp"
 	
 
 	synchronized static void shutdown() {

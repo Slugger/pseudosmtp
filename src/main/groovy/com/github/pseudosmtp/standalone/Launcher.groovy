@@ -29,11 +29,12 @@ import com.github.pseudosmtp.j2ee.listeners.SmtpManager
 
 final class Launcher {
 	static private Server SERVER
+	static private volatile boolean shutdownStarted = false
 	
 	static main(args) {
 		def opts = parseCmdLine(args)
 		if(!opts.h) {
-			startServer(opts.i ? opts.i.toInteger() : 8080, opts.c ?: '/', opts.r ?: null)
+			startServer(opts.p ? opts.p.toInteger() : 8080, opts.c ?: '/', opts.r ?: new File(new File(System.getenv('APP_HOME')), 'groovlets').absolutePath)
 			Runtime.runtime.addShutdownHook {
 				stopServer()
 			}
@@ -53,9 +54,12 @@ final class Launcher {
 	}
 	
 	static private void stopServer() {
-		if(SERVER?.isRunning()) {
+		if(!shutdownStarted && SERVER?.isRunning()) {
+			shutdownStarted = true
 			println 'Shutting down embedded Jetty...'
-			SERVER.stop()
+			new Timer(true).runAfter(3000) {
+				SERVER.stop()
+			}
 		}
 	}
 	

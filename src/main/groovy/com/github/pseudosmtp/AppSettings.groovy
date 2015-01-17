@@ -26,13 +26,27 @@ class AppSettings {
 	static private final String SMTP_PORT = 'smtpPort'
 	static private final String APP_LOG_LVL = 'appLogLevel'
 	static private final String SMTP_LOG_LVL = 'smtpLogLevel'
+	static private final String JETTY_LOG_LVL = 'jettyLogLevel'
 	static private final String ADMIN_PWD = 'adminPwd'
 	
 	InetAddress smtpBindAddress
 	int smtpPort
 	Level appLogLevel
 	Level smtpLogLevel
+	Level jettyLogLevel
 	String adminPassword
+
+	Level getJettyLogLevel() {
+		return Level.toLevel(DataStore.instance.getSetting(JETTY_LOG_LVL, 'info'))
+	}
+	
+	void setJettyLogLevel(Level lvl) {
+		setJettyLogLevel(lvl.toString())
+	}
+	
+	void setJettyLogLevel(String lvl) {
+		DataStore.instance.setSetting(JETTY_LOG_LVL, lvl)
+	}
 
 	String getAdminPassword() {
 		return DataStore.instance.getSetting(ADMIN_PWD, 'admin')
