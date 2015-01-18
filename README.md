@@ -7,7 +7,7 @@ Testing apps that produce and send emails can be bothersome.  How have you done 
 What if there was a better way!?  What if you could deploy an SMTP server in your environment that your testers (and developers) could use as the SMTP server that receives all emails and simply stores them for inspection & validation?  Wouldn't that be great?  Well that's exactly what pseudoSMTP (psmtp) is for.  Simply configure your application under test to use the deployed pseudoSMTP server as its target for all outgoing email.  Any and all email is gladly accepted and stored within a database by psmtp and it will **never, ever, ever actually deliver (or even try to deliver) any email to any listed recipients.**  Hence, the pseudo part of the app's name.  No more having to assign the same email address to every user in your app during testing and then trying to sort out which emails went to whom and whether that was correct.  Assign unique addresses to every user, point your app to the deployed psmtp instance and let it fire off emails at will!
 
 ## How?
-Psmtp is implemented as a J2EE web app to be deployed in your favouritecontainer.  Grab the latest war file, optionally configure the app, deploy it and start using it by having your development and QA teams direct their app instance to use psmtp as its SMTP server.
+Psmtp is implemented as a J2EE web app to be deployed in your favourite container.  Grab the latest war file, optionally configure the app, deploy it and start using it by having your development and QA teams direct their app instance to use psmtp as its SMTP server.
 
 There is also a standalone build of psmtp avaiable that can be executed directly from the command line.  See the Install & Configure howto for more details.
 
@@ -37,6 +37,9 @@ http://mytomcat.mycompany.com:8080/psmtp/api/messages?clnt=my-app-under-test.myc
 ```
 
 So this request will return only the list of emails that include `joe@bigcompany.com` as a bcc recipient.  There are plenty of filtering options available and they are discussed further in the [REST API wiki](https://github.com/Slugger/pseudosmtp/wiki/REST-API).
+
+### MIME & Attachment Support
+The SMTP server completely supports 8bit MIME messages and attachments.  All received attachments are stored and can be retrieved, inspected, validated, etc.
 
 ### Check out FAQ & wiki
 
