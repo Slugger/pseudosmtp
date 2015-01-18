@@ -17,6 +17,8 @@ apply plugin: 'groovy'
 apply plugin: 'war'
 apply plugin: 'eclipse'
 
+defaultTasks 'clean', 'test', 'war'
+
 sourceCompatibility = 1.7
 version = '0.1-SNAPSHOT'
 
