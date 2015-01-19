@@ -20,7 +20,7 @@ apply plugin: 'eclipse'
 defaultTasks 'clean', 'test', 'war'
 
 sourceCompatibility = 1.7
-version = '0.1-SNAPSHOT'
+version = '0.1.0-beta.1'
 
 repositories {
     mavenCentral()

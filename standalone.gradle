@@ -20,7 +20,7 @@ apply plugin: 'eclipse'
 defaultTasks 'clean', 'test', 'distZip'
 
 sourceCompatibility = 1.7
-version = '0.1-SNAPSHOT'
+version = '0.1.0-beta.1'
 
 mainClassName = 'com.github.pseudosmtp.standalone.Launcher'
 
