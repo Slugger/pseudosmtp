@@ -13,14 +13,18 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-apply plugin: 'groovy'
-apply plugin: 'war'
-apply plugin: 'eclipse'
+
+plugins {
+	id 'groovy'
+	id 'war'
+	id 'eclipse'
+	id 'net.nemerosa.versioning' version '1.1.0'
+}
 
 defaultTasks 'clean', 'test', 'war'
 
 sourceCompatibility = 1.7
-version = '0.1.0-beta.1'
+version = versioning.info.full
 
 repositories {
     mavenCentral()
