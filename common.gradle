@@ -15,7 +15,7 @@
 */
 
 sourceCompatibility = 1.7
-version = versioning.info.full
+version = versioning.info.display
 
 repositories {
 	mavenCentral()
