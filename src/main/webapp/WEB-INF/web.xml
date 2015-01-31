@@ -43,4 +43,13 @@
 		<servlet-name>Groovy</servlet-name>
 		<url-pattern>*.groovy</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>template</servlet-name>
+		<servlet-class>groovy.servlet.TemplateServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>template</servlet-name>
+		<url-pattern>*.html</url-pattern>
+	</servlet-mapping>
 </web-app> 

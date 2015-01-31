@@ -16,6 +16,7 @@
 package com.github.pseudosmtp.standalone
 
 import groovy.servlet.GroovyServlet
+import groovy.servlet.TemplateServlet
 
 import javax.servlet.DispatcherType
 
@@ -59,6 +60,9 @@ final class Launcher {
 		
 		holder = new ServletHolder(GroovyServlet)
 		sch.addServlet(holder, '*.groovy')
+		
+		holder = new ServletHolder(TemplateServlet)
+		sch.addServlet(holder, '*.html')
 		
 		SERVER.start()
 	}

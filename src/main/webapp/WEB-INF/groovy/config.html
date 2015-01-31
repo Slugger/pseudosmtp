@@ -1,0 +1,159 @@
+<%
+/*
+ Copyright 2015 Battams, Derek
+ 
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+ 
+		http://www.apache.org/licenses/LICENSE-2.0
+ 
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+*/
+
+import com.github.pseudosmtp.AppSettings
+import com.github.pseudosmtp.About
+import com.github.pseudosmtp.j2ee.helpers.BasicAuthHelper
+		
+if(!BasicAuthHelper.isRequesterAdmin(request)) {
+	response.setHeader('WWW-Authenticate', 'Basic realm="pseudoSMTP"')
+	response.sendError(401, 'Authentication Required')
+	return		
+}
+def config = AppSettings.instance
+%>
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+			}
+			
+			form div {
+				margin: 6px;
+			}
+			
+			form div label {
+				display: block;
+				float: left;
+				width: 180px;
+			}
+			
+			#container {
+				margin: 0 auto;
+				width: 820px;
+				background:#fff;
+			}
+			
+			#header	{
+				background:#ccc;
+				padding: 20px;
+			}
+			
+			#header h1 { margin: 0; }
+			
+			#navigation	{
+				float: left;
+				width: 820px;
+				background:#333;
+			}
+			
+			#navigation ul {
+				margin: 0;
+				padding: 0;
+			}
+			
+			#navigation ul li {
+				list-style-type: none;
+				display: inline;
+			}
+			
+			#navigation li a {
+				display: block;
+				float: left;
+				padding: 5px 10px;
+				color:#fff;
+				text-decoration: none;
+				border-right: 1px solid#fff;
+			}
+			
+			#navigation li a:hover { background:#383; }
+			
+			#content {
+				clear: left;
+				padding: 20px;
+			}
+			
+			#content h2	{
+				color:#000;
+				font-size: 160%;
+				margin: 0 0 .5em;
+			}
+			
+			#footer	{
+				background:#ccc;
+				text-align: right;
+				padding: 20px;
+				height: 1%;
+			}
+		</style>
+		<title>pseudoSMTP: Configuration</title>
+	</head>
+	<body>
+		<div id="container">
+			<div id="header">
+				<h1>pseudoSMTP ${About.VERSION} (Build ${About.BUILD})</h1>
+			</div>
+			<div id="navigation">
+				<ul>
+					<li><a href="https://github.com/Slugger/pseudosmtp/" target="_blank">Project Home</a></li>
+					<li><a href="https://github.com/Slugger/pseudosmtp/wiki" target="_blank">Help</a></li>
+				</ul>
+			</div>
+			<div id="content">
+				<form action="config.groovy" method="POST">
+					<div>
+						<label for="pwd">New admin password:</label>
+						<input type="password" name="pwd" value="$config.adminPassword" />
+					</div>
+					<div>
+						<label for="bind_addr">SMTP bind address:</label>
+						<input type="text" name="bind_addr" value="$config.smtpBindAddressString" />
+					</div>
+					<div>
+						<label for="port">SMTP port:</label>
+						<input type="text" name="port" value="$config.smtpPort" />
+					</div>
+					<div>
+						<label for="app_lvl">App log level:</label>
+						<select name="app_lvl">
+							<% ['error', 'warn', 'info', 'debug', 'trace'].each { %>
+								<option value="$it"<% out << (it == config.appLogLevel.toString().toLowerCase() ? 'selected="selected"' : '')%>>${it.toUpperCase()}</option>
+							<% } %>
+						</select>
+					</div>
+					<div>
+						<label for="smtp_lvl">SMTP log level:</label>
+						<select name="smtp_lvl">
+							<% ['error', 'warn', 'info', 'debug', 'trace'].each { %>
+								<option value="$it"<% out << (it == config.smtpLogLevel.toString().toLowerCase() ? 'selected="selected"' : '')%>>${it.toUpperCase()}</option>
+							<% } %>
+						</select>
+					</div>
+					<div>
+						<input type="submit" name="submit" value="Save" />
+					</div>
+				</form>
+				<p>
+					<b>Note: Submitting this form will cause the SMTP server to restart.</b>
+				</p>
+			</div>
+			<div id="footer">Copyright &copy; 2015 <a href="https://github.com/Slugger" target="_blank">Slugger</a></div>
+		</div>
+	</body>
+</html>

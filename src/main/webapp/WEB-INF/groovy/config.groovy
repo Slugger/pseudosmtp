@@ -20,58 +20,7 @@ import com.github.pseudosmtp.j2ee.listeners.SmtpManager
 if(BasicAuthHelper.isRequesterAdmin(request)) {
 	def method = request.method.toUpperCase()
 	if(method == 'GET') {
-		if(params.SHUTDOWN != 'TRUE') {
-			def config = AppSettings.instance
-			html.html {
-				head {
-					title('pseudoSMTP Configuration')
-				}
-				body {
-					form(method: 'POST', action: request.requestURL) {
-						div {
-							span('New admin password: ')
-							input(type: 'password', name: 'pwd', value: config.adminPassword)
-						}
-						div {
-							span('SMTP bind address: ')
-							input(type: 'text', name: 'bind_addr', value: config.smtpBindAddressString)
-						}
-						div {
-							span('SMTP port: ')
-							input(type: 'text', name: 'port', value: config.smtpPort.toString())
-						}
-						div {
-							span('App log level: ')
-							select(name: 'app_lvl') {
-								['error', 'warn', 'info', 'debug', 'trace'].each {
-									def opts = [value: it]
-									if(it == config.appLogLevel.toString().toLowerCase())
-										opts['selected'] = 'selected'
-									option(opts, it.toUpperCase())
-								}
-							}
-						}
-						div {
-							span('SMTP log level: ')
-							select(name: 'smtp_lvl') {
-								['error', 'warn', 'info', 'debug', 'trace'].each {
-									def opts = [value: it]
-									if(it == config.smtpLogLevel.toString().toLowerCase())
-										opts['selected'] = 'selected'
-									option(opts, it.toUpperCase())
-								}
-							}
-						}
-						div {
-							input(type: 'submit', name: 'submit', value: 'update')
-						}
-						p {
-							b('Submitting this form will cause the SMTP server to restart.')
-						}
-					}
-				}
-			}
-		} else {
+		if(params.SHUTDOWN == 'TRUE') {
 			response.contentType = 'text/plain'
 			try {
 				Class.forName('com.github.pseudosmtp.standalone.Main')
@@ -84,7 +33,8 @@ if(BasicAuthHelper.isRequesterAdmin(request)) {
 				out << 'You appear to be running pseudoSMTP in a J2EE container.'
 				out << 'Shutdown the app from your container\'s admin instead.'
 			}
-		}
+		} else
+			response.sendRedirect('config.html')
 	} else if(method == 'POST') {
 		def config = AppSettings.instance
 
@@ -104,7 +54,7 @@ if(BasicAuthHelper.isRequesterAdmin(request)) {
 		config.setSmtpLogLevel(params.smtp_lvl)
 		SmtpManager.restartSmtpServer()
 
-		response.sendRedirect(request.requestURL.toString())
+		response.sendRedirect('config.html')
 	}
 } else {
 	response.setHeader('WWW-Authenticate', 'Basic realm="pseudoSMTP"')
