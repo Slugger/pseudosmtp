@@ -12,24 +12,25 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-*/
+ */
+package com.github.pseudosmtp
 
-plugins {
-	id 'groovy'
-	id 'application'
-	id 'eclipse'
-	id 'net.nemerosa.versioning' version '1.2.0'
-}
-apply from: 'common.gradle'
+class About {
 
-defaultTasks 'clean', 'test', 'distZip'
-
-mainClassName = 'com.github.pseudosmtp.standalone.Launcher'
-
-dependencies {
-	runtime 'commons-cli:commons-cli:1.2'	
-}
-
-applicationDistribution.from(new File('src/main/webapp/WEB-INF/groovy')) {
-	into 'groovlets'
+	static final String VERSION
+	static final String BUILD
+	static {
+		def propsStream = About.class.getResourceAsStream('/psmtp-versioning.properties')
+		if(propsStream) {
+			def props = new Properties()
+			propsStream.withReader { props.load(it) }
+			VERSION = props['VERSION_DISPLAY']
+			BUILD = props['VERSION_BUILD']
+		} else {
+			VERSION = '[dev]'
+			BUILD = '[dev]'
+		}
+	}
+	
+	private About() {}
 }
