@@ -24,7 +24,7 @@ apply from: 'common.gradle'
 
 defaultTasks 'clean', 'test', 'distZip'
 
-mainClassName = 'com.github.pseudosmtp.standalone.Launcher'
+mainClassName = 'com.github.pseudosmtp.standalone.Main'
 
 dependencies {
 	runtime 'commons-cli:commons-cli:1.2'	

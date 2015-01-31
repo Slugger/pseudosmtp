@@ -24,7 +24,7 @@ if(BasicAuthHelper.isRequesterAdmin(request)) {
 			response.contentType = 'text/plain'
 			try {
 				Class.forName('com.github.pseudosmtp.standalone.Main')
-				final def cls = Class.forName('com.github.pseudosmtp.standalone.Launcher')
+				final def cls = Class.forName('com.github.pseudosmtp.standalone.Main')
 				out << 'pseudoSMTP is shutting down...'
 				def m = cls.getDeclaredMethod('stopServer')
 				m.accessible = true
