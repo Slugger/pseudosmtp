@@ -33,3 +33,8 @@ dependencies {
 applicationDistribution.from(new File('src/main/webapp/WEB-INF/groovy')) {
 	into 'groovlets'
 }
+
+applicationDistribution.from(new File('src/main/webapp')) {
+	into 'groovlets'
+	exclude '**/WEB-INF/**'
+}
