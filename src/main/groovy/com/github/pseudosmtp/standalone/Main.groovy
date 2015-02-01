@@ -15,7 +15,20 @@
 */
 package com.github.pseudosmtp.standalone
 
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import org.apache.log4j.SimpleLayout
+
 class Main {
+	static {
+		System.setErr(new PrintStream(new FileOutputStream(new File('psmtp.stderr.log'))))
+		def log = Logger.rootLogger
+		log.removeAllAppenders()
+		log.addAppender(new ConsoleAppender(new SimpleLayout()))
+		log.level = Level.WARN
+	}
+	
 	static main(args) {
 		def opts = parseCmdLine(args)
 		if(!opts.h) {
