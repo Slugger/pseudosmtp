@@ -35,6 +35,7 @@ import com.github.pseudosmtp.datastore.QueryBuilder
 import com.github.pseudosmtp.datastore.SqlFilter
 import com.github.pseudosmtp.j2ee.filters.RestRequestValidator
 import com.github.pseudosmtp.j2ee.helpers.ApiHelper
+import com.github.pseudosmtp.j2ee.helpers.ResponseHelper
 
 @Path('/messages')
 class PsmtpMimeMessage {
@@ -51,7 +52,7 @@ class PsmtpMimeMessage {
 			json(objs)
 			return json.toString()
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND)
+		throw new WebApplicationException("No messages with scope=${ApiHelper.getClientScope(req)} exist.", Response.Status.NOT_FOUND)
 	}
 	
 	protected QueryBuilder parseReqQry(HttpServletRequest req) {
@@ -86,15 +87,14 @@ class PsmtpMimeMessage {
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	Response getMessage(@Context HttpServletRequest req, @PathParam('id')String id) {
 		InputStream msg = DataStore.instance.findById(id.toLong(), ApiHelper.getClientScope(req))
-		if(msg != null)
+		if(msg)
 			return Response.ok(msg).build()
-		throw new WebApplicationException(Response.Status.NOT_FOUND)
+		throw new WebApplicationException("No message with id=$id and scope=${ApiHelper.getClientScope(req)} exists.", Response.Status.NOT_FOUND)
 	}
 	
 	@DELETE
 	@Path('/{id: \\d+}')
 	void deleteMessage(@Context HttpServletRequest req, @PathParam('id')String id) {
-		if(!DataStore.instance.deleteMessage(id.toLong(), ApiHelper.getClientScope(req)))
-			throw new WebApplicationException(Response.Status.NOT_FOUND)
+		DataStore.instance.deleteMessage(id.toLong(), ApiHelper.getClientScope(req))
 	}
 }

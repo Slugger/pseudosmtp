@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response
 
 import org.apache.log4j.Logger
 
-import com.github.pseudosmtp.j2ee.filters.RestRequestValidator;
+import com.github.pseudosmtp.j2ee.helpers.ResponseHelper
 
 class RestRequestValidator implements Filter {
 	static volatile Logger LOG = null // We have to lazily init this logger because logging is initialized after filters by container
@@ -40,9 +40,10 @@ class RestRequestValidator implements Filter {
 		if(!LOG)
 			LOG = Logger.getLogger(RestRequestValidator)
 		def clnt = request.getParameter(CLNT_SCOPE_PARAM)
-		if(!clnt)
-			response.sendError(Response.Status.BAD_REQUEST.statusCode, 'All API requests must include a client scope!')
-		else {
+		if(!clnt) {
+			response.setStatus(Response.Status.BAD_REQUEST.statusCode)
+			response.writer << ResponseHelper.buildJsonObject(Response.Status.BAD_REQUEST.statusCode, 'All API requests must include a client scope!')
+		} else {
 			try {
 				def ip = InetAddress.getByName(clnt).toString()
 				ip = ip.substring(ip.indexOf('/') + 1)
@@ -50,7 +51,8 @@ class RestRequestValidator implements Filter {
 				if(LOG.isDebugEnabled())
 					LOG.debug "Received CLNT: $clnt; set CLNT_SCOPE: $ip"
 			} catch(Throwable t) {
-				response.sendError(Response.Status.BAD_REQUEST.statusCode, t.message)
+				response.setStatus(Response.Status.INTERNAL_SERVER_ERROR.statusCode)
+				response.writer << ResponseHelper.buildJsonObject(Response.Status.INTERNAL_SERVER_ERROR.statusCode, t.message, t)
 				return
 			}
 			chain.doFilter(request, response)
