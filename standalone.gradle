@@ -38,3 +38,11 @@ applicationDistribution.from(new File('src/main/webapp')) {
 	into 'groovlets'
 	exclude '**/WEB-INF/**'
 }
+
+startScripts << {
+	def filtered = []
+	unixScript.text.eachLine {
+		filtered << it.replace('APP_HOME=', 'export APP_HOME=')
+	}
+	unixScript.text = filtered.join('\n')
+}
