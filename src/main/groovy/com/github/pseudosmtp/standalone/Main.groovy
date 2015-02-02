@@ -32,7 +32,7 @@ class Main {
 	static main(args) {
 		def opts = parseCmdLine(args)
 		if(!opts.h) {
-			Launcher.startServer(opts.p ? opts.p.toInteger() : 8080, opts.c ?: '/', opts.r ?: new File(new File(System.getenv('APP_HOME')), 'groovlets').absolutePath)
+			Launcher.startServer(opts.p ? opts.p.toInteger() : 8080, opts.c ?: '/', opts.r).absolutePath
 			Runtime.runtime.addShutdownHook {
 				Launcher.stopServer()
 			}

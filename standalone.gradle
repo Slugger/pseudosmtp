@@ -30,19 +30,8 @@ dependencies {
 	runtime 'commons-cli:commons-cli:1.2'	
 }
 
-applicationDistribution.from(new File('src/main/webapp/WEB-INF/groovy')) {
-	into 'groovlets'
-}
-
-applicationDistribution.from(new File('src/main/webapp')) {
-	into 'groovlets'
-	exclude '**/WEB-INF/**'
-}
-
-startScripts << {
-	def filtered = []
-	unixScript.text.eachLine {
-		filtered << it.replace('APP_HOME=', 'export APP_HOME=')
+sourceSets {
+	main {
+		resources.srcDirs = ['src/main/resources', 'src/main/webapp']
 	}
-	unixScript.text = filtered.join('\n')
 }

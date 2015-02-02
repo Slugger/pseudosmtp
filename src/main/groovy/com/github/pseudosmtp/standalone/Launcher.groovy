@@ -42,7 +42,7 @@ final class Launcher {
 		}
 	}
 	
-	static private void startServer(int port, String contextPath, String resourceBase) {
+	static private void startServer(int port, String contextPath, def baseResource) {
 		SERVER = new Server(port)
 		
 		ServletContextHandler sch = new ServletContextHandler(ServletContextHandler.SESSIONS)
@@ -50,8 +50,15 @@ final class Launcher {
 		sch.displayName = 'pseudoSMTP'
 		sch.addEventListener(new SmtpManager())
 		sch.addFilter(RestRequestValidator, '/api/*', EnumSet.allOf(DispatcherType))
-		if(resourceBase)
-			sch.resourceBase = new File(resourceBase)
+		if(!baseResource) {
+			def base = Launcher.class.protectionDomain.codeSource.location.toExternalForm()
+			if(base.endsWith('.jar'))
+				sch.resourceBase = "jar:${base}!/"
+			else
+				sch.resourceBase = base
+		} else
+			sch.resourceBase = new File(baseResource).toURI().toString()
+		
 		SERVER.handler = sch
 		
 		ServletHolder holder = new ServletHolder(ServletContainer)
