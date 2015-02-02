@@ -48,7 +48,8 @@ class RestRequestValidatorTests extends PsmtpSpec {
 			new RestRequestValidator().doFilter(req, resp, chain)
 		then:
 			1 * req.getParameter(RestRequestValidator.CLNT_SCOPE_PARAM)
-			1 * resp.sendError(400, _)
+			1 * resp.setStatus(400)
+			1 * resp.getWriter() >> new PrintWriter(new StringWriter())
 			0 * _._ // No more calls on mocks!
 	}
 }

@@ -38,7 +38,7 @@ abstract class PsmtpFvtSpec extends Specification {
 			SMTP_PORT = 2525
 			MY_IP = 'localhost'
 
-			Launcher.startServer(WEB_PORT, '/', new File('src/main/webapp/WEB-INF/groovy').absolutePath)
+			Launcher.startServer(WEB_PORT, '/', new File('src/main/webapp').absolutePath)
 
 			Runtime.runtime.addShutdownHook {
 				Launcher.stopServer()

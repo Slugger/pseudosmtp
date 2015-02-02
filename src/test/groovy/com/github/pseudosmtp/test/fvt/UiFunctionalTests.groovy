@@ -13,17 +13,18 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
+package com.github.pseudosmtp.test.fvt
 
-plugins {
-	id 'groovy'
-	id 'war'
-	id 'eclipse'
-	id 'net.nemerosa.versioning' version '1.2.0'
-}
-apply from: 'common.gradle'
+import geb.spock.GebSpec
 
-defaultTasks 'clean', 'test', 'war'
+import com.github.pseudosmtp.test.PsmtpFvtSpec
 
-war {
-	rootSpec.exclude '**/com/github/pseudosmtp/standalone/Main*'
+class UiFunctionalTests extends GebSpec {
+	def 'Validate config page loads'() {
+		given:
+			go 'config.html'
+		expect:
+			title == 'pseudoSMTP: Configuration'
+			$('input', value: 'Save').size() == 1
+	}
 }
