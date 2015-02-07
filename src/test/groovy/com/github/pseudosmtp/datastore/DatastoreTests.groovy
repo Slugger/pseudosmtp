@@ -50,7 +50,7 @@ class DatastoreTests extends PsmtpSpec {
 			def msgs = DataStore.instance.findByClient('localhost')
 		then: 'the messages are found'
 			msgs.size() == 1
-			msgs[0] == 1
+			msgs[0].id == 1
 	}
 	
 	def 'Ensure invalid clients return no results'() {

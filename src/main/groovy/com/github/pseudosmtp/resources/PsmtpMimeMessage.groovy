@@ -15,8 +15,8 @@
 */
 package com.github.pseudosmtp.resources
 
-import groovy.json.JsonBuilder
 import groovy.json.JsonException
+import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 import javax.servlet.http.HttpServletRequest
@@ -35,7 +35,6 @@ import com.github.pseudosmtp.datastore.QueryBuilder
 import com.github.pseudosmtp.datastore.SqlFilter
 import com.github.pseudosmtp.j2ee.filters.RestRequestValidator
 import com.github.pseudosmtp.j2ee.helpers.ApiHelper
-import com.github.pseudosmtp.j2ee.helpers.ResponseHelper
 
 @Path('/messages')
 class PsmtpMimeMessage {
@@ -43,14 +42,16 @@ class PsmtpMimeMessage {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	String listMessages(@Context HttpServletRequest req) {
-		List objs = []
-		DataStore.instance.findByClient(ApiHelper.getClientScope(req), parseReqQry(req)).each {
-			objs << [id: it, url: "/api/messages/$it"]
-		}
+		def scope = ApiHelper.getClientScope(req)
+		List objs = DataStore.instance.findByClient(scope, parseReqQry(req))
 		if(objs.size() > 0) {
-			def json = new JsonBuilder()
-			json(objs)
-			return json.toString()
+			def baseUrl = req.requestURL.toString()
+			if(!baseUrl.endsWith('/'))
+				baseUrl += '/'
+			objs.each {
+				it['__url'] = new URL(new URL(baseUrl), "${it.id}?clnt=$scope")
+			}
+			return JsonOutput.toJson(objs)
 		}
 		throw new WebApplicationException("No messages with scope=${ApiHelper.getClientScope(req)} exist.", Response.Status.NOT_FOUND)
 	}

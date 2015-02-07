@@ -19,6 +19,7 @@ import groovy.sql.Sql
 import groovy.util.logging.Log4j
 
 import java.sql.SQLException
+import java.sql.Types
 
 import javax.mail.Message.RecipientType
 import javax.mail.internet.MimeMessage
@@ -72,25 +73,50 @@ class DataStore {
 	}
 
 	synchronized List findByClient(String clnt, QueryBuilder qb = null) {
-		def qry
+		def qry = new StringBuilder('SELECT DISTINCT m.id FROM message AS m LEFT OUTER JOIN recipients AS r ON m.id = r.id LEFT OUTER JOIN headers AS h ON m.id = h.id LEFT OUTER JOIN attachments AS a ON m.id = a.id WHERE client = ?')
 		def params
-		if(!qb) {
-			qry = 'SELECT id FROM message WHERE client = ?'
+		if(!qb)
 			params = [clnt]
-		} else {
-			qry = new StringBuilder('SELECT DISTINCT m.id FROM message AS m LEFT OUTER JOIN recipients AS r ON m.id = r.id LEFT OUTER JOIN headers AS h ON m.id = h.id LEFT OUTER JOIN attachments AS a ON m.id = a.id WHERE client = ? AND ')
+		else {
+			qry << ' AND '
 			qry.append(qb.toString())
 			params = [clnt]
 			params.addAll(qb.parameters)
-			qry = qry.toString()
 		}	
+		qry = qry.toString()
 		if(log.isTraceEnabled())
 			log.trace "$qry $params"
-		List ids = []
-		sql.eachRow(qry, params) {
-			ids << it[0]
+			
+		def matches = []
+		def ids = sql.rows(qry, params).collect { it.id }
+		ids.each { id ->
+			def record = [id: id, _for: new HashSet(), to: new HashSet(), cc: new HashSet(), bcc: new HashSet()]
+			
+			def msgQry = "SELECT sent, sender FROM message WHERE id = $id"
+			sql.eachRow(msgQry) {
+				record.sent = it.sent
+				record.sender = it.sender
+			}
+			
+			def attachQry = "SELECT file_name FROM attachments WHERE id = $id"
+			record.'_attachments' = sql.rows(attachQry).size()
+			
+			def recpQry = "SELECT type, email FROM recipients WHERE id = $id"
+			sql.eachRow(recpQry) {
+				def type = it.type.toLowerCase().trim() // Stumped as to why there's trailing whitespace on this field name
+				def addrs = record."$type"
+				addrs << it.email
+				record.'_for' << it.email
+			}
+			
+			def hdrQry = "SELECT name, value FROM headers WHERE id = $id"
+			sql.eachRow(hdrQry) {
+				record[it.name] = it.value
+			}
+			
+			matches << record
 		}
-		return ids
+		return matches
 	}
 	
 	synchronized void deleteAllByClient(String clnt) {
