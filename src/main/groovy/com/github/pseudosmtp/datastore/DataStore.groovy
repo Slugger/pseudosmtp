@@ -103,7 +103,7 @@ class DataStore {
 			
 			def recpQry = "SELECT type, email FROM recipients WHERE id = $id"
 			sql.eachRow(recpQry) {
-				def type = it.type.toLowerCase().trim() // Stumped as to why there's trailing whitespace on this field name
+				def type = it.type.toLowerCase()
 				def addrs = record."$type"
 				addrs << it.email
 				record.'_for' << it.email
@@ -303,7 +303,7 @@ class DataStore {
 			sql.execute '''
 				CREATE TABLE recipients (
 					id BIGINT NOT NULL,
-					type CHAR(3) NOT NULL,
+					type VARCHAR(3) NOT NULL,
 					email VARCHAR(128) NOT NULL,
 					CONSTRAINT RECPT_MSG_FK FOREIGN KEY (id) REFERENCES message(id) ON DELETE CASCADE
 				)
