@@ -1,6 +1,9 @@
 # pseudoSMTP
 A testing tool for apps that produce and send emails via SMTP.
 
+## Build Status
+`master`: [![Build Status](https://travis-ci.org/Slugger/pseudosmtp.svg?branch=master)](https://travis-ci.org/Slugger/pseudosmtp)
+
 ## About
 Testing apps that produce and send emails can be bothersome.  How have you done it in the past?  Create a throwaway Gmail account, send email to it, login and inspect the results?  Maybe you automated the validation by accessing the emails via IMAP or POP3?  In either case, are you really exercising your application completely?  Maybe, but how difficult is it to ensure/force your app to always and only send email to this throwaway Gmail account?  And what happens when someone forgets to do that, launches full integration/regression testing, and you end up sending test emails to everyone on your team or in your department/organization/company/etc.?  Usually you get a lot of replies with a not so nice tone to them, especially when it happens more than once.
 
