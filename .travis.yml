@@ -1,1 +1,8 @@
 language: groovy
+env:
+   - BLDFILE=build.gradle
+   - BLDFILE=standalone.gradle
+cache:
+   directories:
+      - $HOME/.gradle
+script: ./gradlew -b $BLDFILE
