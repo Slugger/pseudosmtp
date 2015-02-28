@@ -15,6 +15,11 @@
 */
 
 sourceCompatibility = 1.7
+
+versioning {
+	releaseMode = 'snapshot'
+}
+
 version = versioning.info.display
 
 repositories {
