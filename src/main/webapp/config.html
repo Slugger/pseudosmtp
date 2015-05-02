@@ -41,7 +41,7 @@ def config = AppSettings.instance
 			form div label {
 				display: block;
 				float: left;
-				width: 180px;
+				width: 260px;
 			}
 			
 			#container {
@@ -144,6 +144,14 @@ def config = AppSettings.instance
 								<option value="$it"<% out << (it == config.smtpLogLevel.toString().toLowerCase() ? 'selected="selected"' : '')%>>${it.toUpperCase()}</option>
 							<% } %>
 						</select>
+					</div>
+					<div>
+						<label for="sender_regex">Sender Rejection Regex:</label>
+						<input type="text" name="sender_regex" value="$config.senderRegex" />
+					</div>
+					<div>
+						<label for="recipient_regex">Recipient Rejection Regex:</label>
+						<input type="text" name="recipient_regex" value="$config.recipientRegex" />
 					</div>
 					<div>
 						<input type="submit" name="submit" value="Save" />

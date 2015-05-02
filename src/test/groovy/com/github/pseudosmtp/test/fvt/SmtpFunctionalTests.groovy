@@ -15,11 +15,13 @@
 */
 package com.github.pseudosmtp.test.fvt
 
+import javax.mail.SendFailedException
 import javax.mail.internet.MimeMessage
 
 import org.apache.commons.net.smtp.SMTPClient
 import org.apache.commons.net.smtp.SMTPReply
 
+import com.github.pseudosmtp.AppSettings
 import com.github.pseudosmtp.j2ee.listeners.SmtpManager
 import com.github.pseudosmtp.test.PsmtpFvtSpec
 import com.github.pseudosmtp.test.helpers.EmailHelper
@@ -61,5 +63,38 @@ class SmtpFunctionalTests extends PsmtpFvtSpec {
 				def msg = new MimeMessage(SmtpManager.SMTP_SESSION, restClnt[it.id])
 				assert msg.content.trim() == "This is test message #${i + 1}."
 			}
+	}
+	
+	def 'Ensure rejected senders are rejected'() {
+		setup:
+			def origRegex = AppSettings.instance.senderRegex
+			AppSettings.instance.senderRegex = '.*'
+			assert restClnt.getAll().size() == 0
+		when: 'a sender that should be rejected tries to send an email'
+			EmailHelper.sendQuickMessage('sender@localhost', 'Test Message', 'This is a test', ['user@foo.com'])
+		then: 'the mail is not accepted'
+			thrown(SendFailedException)
+			restClnt.getAll().size() == 0
+		cleanup:
+			AppSettings.instance.senderRegex = origRegex
+	}
+	
+	def 'Ensure rejected recipients are rejected'() {
+		setup:
+			def origRegex = AppSettings.instance.recipientRegex
+			AppSettings.instance.recipientRegex = '.*@invalid'
+			assert restClnt.getAll().size() == 0
+		when: 'a recipient that should be rejected is addressed'
+			EmailHelper.sendQuickMessage('sender@localhost', 'Test Message', 'This is a test', ['user@invalid'])
+		then: 'the message is rejected'
+			thrown(SendFailedException)
+			restClnt.getAll().size() == 0
+		when: 'a valid recipient is addressed'
+			assert restClnt.getAll().size() == 0
+			EmailHelper.sendQuickMessage('sender@localhost', 'Test Message', 'This is a test', ['user@good.com'])
+		then: 'the message is accepted'
+			restClnt.getAll().size() == 1
+		cleanup:
+			AppSettings.instance.recipientRegex = origRegex
 	}
 }

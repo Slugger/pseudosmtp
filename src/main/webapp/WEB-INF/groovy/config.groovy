@@ -52,6 +52,8 @@ if(BasicAuthHelper.isRequesterAdmin(request)) {
 
 		config.setAppLogLevel(params.app_lvl)
 		config.setSmtpLogLevel(params.smtp_lvl)
+		config.senderRegex = params.sender_regex
+		config.recipientRegex = params.recipient_regex
 		SmtpManager.restartSmtpServer()
 
 		response.sendRedirect('config.html')

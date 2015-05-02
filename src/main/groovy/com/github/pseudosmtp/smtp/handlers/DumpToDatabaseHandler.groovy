@@ -23,6 +23,7 @@ import org.subethamail.smtp.MessageHandler
 import org.subethamail.smtp.RejectException
 import org.subethamail.smtp.TooMuchDataException
 
+import com.github.pseudosmtp.AppSettings
 import com.github.pseudosmtp.datastore.DataStore
 
 @Log4j
@@ -38,24 +39,31 @@ class DumpToDatabaseHandler implements MessageHandler {
 	}
 	
 	@Override
-	public void from(String from) throws RejectException {
-		this.from = new InternetAddress(from, true).address
+	void from(String from) throws RejectException {
+		def regex = AppSettings.instance.senderRegex
+		def fromAddr = new InternetAddress(from, true).address
+		if(regex && fromAddr.matches(regex))
+			throw new RejectException("Sender rejected (matches regex)! [$from]")
+		this.from = fromAddr
 	}
 
 	@Override
-	public void recipient(String recipient) throws RejectException {
-		to << new InternetAddress(recipient, true).address
+	void recipient(String recipient) throws RejectException {
+		def regex = AppSettings.instance.recipientRegex
+		def addr = new InternetAddress(recipient, true).address
+		if(addr.matches(regex))
+			throw new RejectException("Recipient rejected (matched regex)! [$addr]")
+		to << addr
 	}
 
 	@Override
-	public void data(InputStream data) throws RejectException,
-			TooMuchDataException, IOException {
+	void data(InputStream data) throws RejectException, TooMuchDataException, IOException {
 		DataStore.instance.insertMessage(clntAddr, data, from, to)
 		data.close()
 	}
 
 	@Override
-	public void done() {
+	void done() {
 		log.debug "Done handling message! [clnt: $clntAddr, from: $from]"
 	}
 }

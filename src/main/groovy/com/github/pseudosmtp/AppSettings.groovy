@@ -28,14 +28,25 @@ class AppSettings {
 	static private final String SMTP_LOG_LVL = 'smtpLogLevel'
 	static private final String JETTY_LOG_LVL = 'jettyLogLevel'
 	static private final String ADMIN_PWD = 'adminPwd'
+	static private final String SENDER_REGEX = 'senderRegex'
+	static private final String RECIPIENT_REGEX = 'recipientRegex'
 	
-	InetAddress smtpBindAddress
-	int smtpPort
-	Level appLogLevel
-	Level smtpLogLevel
-	Level jettyLogLevel
-	String adminPassword
-
+	String getSenderRegex() {
+		DataStore.instance.getSetting(SENDER_REGEX, '')
+	}
+	
+	String getRecipientRegex() {
+		DataStore.instance.getSetting(RECIPIENT_REGEX, '')
+	}
+	
+	void setSenderRegex(String regex) {
+		DataStore.instance.setSetting(SENDER_REGEX, regex)
+	}
+	
+	void setRecipientRegex(String regex) {
+		DataStore.instance.setSetting(RECIPIENT_REGEX, regex)
+	}
+	
 	Level getJettyLogLevel() {
 		return Level.toLevel(DataStore.instance.getSetting(JETTY_LOG_LVL, 'info'))
 	}
@@ -110,4 +121,6 @@ class AppSettings {
 	void setSmtpLogLevel(String lvl) {
 		DataStore.instance.setSetting(SMTP_LOG_LVL, lvl)
 	}
+	
+	
 }

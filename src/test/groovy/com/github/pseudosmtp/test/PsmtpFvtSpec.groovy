@@ -76,4 +76,13 @@ abstract class PsmtpFvtSpec extends Specification {
 				restClnt.deleteAll()
 		}
 	}
+	
+	def cleanupSpec() {
+		if(isStepwiseSpec()) {
+			if(!PsmtpFvtSpec.USE_EXT_HOST)
+				DataStore.instance.shutdown()
+			else
+				restClnt.deleteAll()
+		}
+	}
 }
