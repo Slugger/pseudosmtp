@@ -21,6 +21,7 @@ import groovy.servlet.TemplateServlet
 import javax.servlet.DispatcherType
 
 import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.DefaultServlet
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.glassfish.jersey.servlet.ServletContainer
@@ -70,6 +71,9 @@ final class Launcher {
 		
 		holder = new ServletHolder(TemplateServlet)
 		sch.addServlet(holder, '*.html')
+		
+		holder = new ServletHolder(DefaultServlet)
+		sch.addServlet(holder, '/')
 		
 		SERVER.start()
 	}

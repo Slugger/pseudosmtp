@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<%
+	import groovy.xml.MarkupBuilder
+	
+	def metadata = request.getAttribute('metadata')
+	def mb = new MarkupBuilder(out)
+%>
+<html>
+	<head>
+		<script src="js/jquery-min-1.9.1.js"></script>
+		<script src="js/kickstart.js"></script> <!-- KICKSTART -->
+		<link rel="stylesheet" href="css/kickstart.css" media="all" /> <!-- KICKSTART -->
+		<link rel="stylesheet" href="css/psmtp.css" media="all" />
+	</head>
+	<body>
+		<!-- menus, etc. -->
+		<div class="col_2">
+		
+		</div>
+		
+		<!-- message list -->
+		<div class="col_10">
+			<table class="sortable">
+				<thead>
+					<tr class="alt first last">
+						<th rel="0">&nbsp;</th> <!-- icons -->
+						<th rel="1">To</th>
+						<th rel="2">Cc</th>
+						<th rel="3">Bcc</th>
+						<th rel="4">From</th>
+						<th rel="5">Subject</th>
+						<th rel="6">Sent</th>
+					</tr>
+				</thead>
+				<% mb.tbody {
+					metadata.each { msg ->
+						tr {
+							def icons = []
+							if(msg._attachments)
+								icons << 'fa-paperclip' << 'fa-exclamation'
+							if(icons) {
+								td {
+									icons.each { span(class: "fa $it") }
+								}
+							} else
+								td(' ')
+							td(msg.to.join(', '))
+							td(msg.cc.join(', '))
+							td(msg.bcc.join(', '))
+							td(msg.sender)
+							td(msg.Subject)
+							def sent = Date.parse('yyyy-MM-dd\'T\'HH:mm:ssZ', msg.sent)
+							td(sent.format('MMM d H:mm:ss'), value: sent.time)
+						}
+					}
+				} %>
+			</table>
+		</div>
+		
+		<!-- message view -->
+		<!--
+		<div class="col_12">
+		
+		</div>
+		-->
+	</body>
+</html>
