@@ -3,10 +3,11 @@
 	import groovy.xml.MarkupBuilder
 	
 	def metadata = request.getAttribute('metadata')
-	def mb = new MarkupBuilder(out)
+	def mb = new MarkupBuilder(out)	
 %>
 <html>
 	<head>
+		<title>pseudoSMTP: Online Viewer</title>
 		<script src="js/jquery-min-1.9.1.js"></script>
 		<script src="js/kickstart.js"></script> <!-- KICKSTART -->
 		<link rel="stylesheet" href="css/kickstart.css" media="all" /> <!-- KICKSTART -->
@@ -37,7 +38,9 @@
 						tr {
 							def icons = []
 							if(msg._attachments)
-								icons << 'fa-paperclip' << 'fa-exclamation'
+								icons << 'fa-paperclip'
+							if(msg._important)
+								icons << 'fa-exclamation'
 							if(icons) {
 								td {
 									icons.each { span(class: "fa $it") }

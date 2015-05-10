@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>pseudoSMTP: Online Viewer</title>
+		<script src="js/jquery-min-1.9.1.js"></script>
+		<script src="js/kickstart.js"></script> <!-- KICKSTART -->
+		<link rel="stylesheet" href="css/kickstart.css" media="all" /> <!-- KICKSTART -->
+		<link rel="stylesheet" href="css/psmtp.css" media="all" />
+	</head>
+	<body>
+		<div class="col_3"></div>
+		<div class="col_6">
+			<form class="center" method="GET" action="inbox.groovy" id="loginFrm">
+				<label for="scope">Client Scope</label>
+				<input type="text" name="clnt">
+				<button class="small green" onclick="\$('loginFrm').submit();">Login</button>
+				<span class="tooltip fa fa-question-circle" title="Enter the host/IP of the machine sending out the emails to pseudoSMTP" />				
+			</form>
+		</div>
+		<div class="col_3"></div>
+	</body>
+</html>

@@ -114,11 +114,17 @@ class DataStore {
 				record[it.name] = it.value
 			}
 			
+			record['_important'] = isHighPriority(record)
+			
 			matches << record
 		}
 		return matches
 	}
-	
+
+	private boolean isHighPriority(def record) {
+		record['X-Priority']?.contains('1') || record['X-MSMail-Priority']?.toLowerCase() == 'high' || record['Importance']?.toLowerCase() == 'high'
+	}	
+
 	synchronized void deleteAllByClient(String clnt) {
 		def qry = "DELETE FROM message WHERE client = $clnt"
 		if(log.isTraceEnabled()) {
