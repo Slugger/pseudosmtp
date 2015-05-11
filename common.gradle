@@ -19,6 +19,7 @@ version = versioning.info.display
 
 repositories {
 	mavenCentral()
+	jcenter()
 }
 
 dependencies {
