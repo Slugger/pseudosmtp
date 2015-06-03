@@ -32,7 +32,7 @@ class Main {
 	static main(args) {
 		def opts = parseCmdLine(args)
 		if(!opts.h) {
-			Launcher.startServer(opts.p ? opts.p.toInteger() : 8080, opts.c ?: '/', opts.r).absolutePath
+			Launcher.startServer(opts.p ? opts.p.toInteger() : 8080, opts.c ?: '/', opts.r)
 			Runtime.runtime.addShutdownHook {
 				Launcher.stopServer()
 			}
@@ -40,7 +40,7 @@ class Main {
 	}
 	
 	static private def parseCmdLine(def args) {
-		def cli = new CliBuilder(usage: 'psmtp.jar [options]')
+		def cli = new CliBuilder(usage: 'pseudosmtp [options]')
 		cli.p(args: 1, argName: 'port', 'Port number the embedded Jetty server will listen on. [8080]')
 		cli.c(args: 1, argName: 'context', 'Context path to deploy psmtp at. [<root> i.e. /]')
 		cli.r(args: 1, argName: 'resource_base', 'Base directory used for resource discovery (usually only changed for testing purposes).')

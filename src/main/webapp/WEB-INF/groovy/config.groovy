@@ -54,6 +54,11 @@ if(BasicAuthHelper.isRequesterAdmin(request)) {
 		config.setSmtpLogLevel(params.smtp_lvl)
 		config.senderRegex = params.sender_regex
 		config.recipientRegex = params.recipient_regex
+		if(params.keystore)
+			config.keystoreFile = new File(params.keystore)
+		config.keystorePassword = params.keystore_pwd
+		config.enableStarttls = params.starttls ? true : false
+		config.enableSmtps = params.smtps ? true : false
 		SmtpManager.restartSmtpServer()
 
 		response.sendRedirect('config.html')

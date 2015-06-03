@@ -117,13 +117,30 @@ class SmtpManager implements ServletContextListener {
 	}
 	
 	private void startSmtpServer() {
+		def settings = AppSettings.instance
 		smtpSrv = new SMTPServer(new PsmtpMessageHandlerFactory())
-		smtpSrv.bindAddress = AppSettings.instance.smtpBindAddress
-		smtpSrv.port = AppSettings.instance.smtpPort
+		smtpSrv.bindAddress = settings.smtpBindAddress
+		smtpSrv.port = settings.smtpPort
+		def keystore = settings.keystoreFile
+		if(settings.enableStarttls) {
+			if(!settings.enableSmtps) {
+				if(keystore?.exists()) {
+					def pwd = settings.keystorePassword
+					if(pwd) {
+						System.setProperty('javax.net.ssl.keyStore', keystore.absolutePath)
+						System.setProperty('javax.net.ssl.keyStorePassword', pwd)
+						smtpSrv.setEnableTLS(true)
+						LOG.info 'STARTTLS support enabled'
+					} else
+						LOG.warn 'STARTTLS ignored because keystore password is not set'
+				} else
+					LOG.warn "STARTTLS ignored because keystore file does not exist [${keystore?.absolutePath}]"
+			} else
+				LOG.warn 'STARTTLS ignored because SMTPS is also enabled'
+		}
 		smtpSrv.start()
 		LOG.info "SMTP server listening on ${smtpSrv.bindAddress ?: '*'}:$smtpSrv.port"
 	}
-	
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {

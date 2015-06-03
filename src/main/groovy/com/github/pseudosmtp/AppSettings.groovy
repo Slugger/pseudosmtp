@@ -30,6 +30,52 @@ class AppSettings {
 	static private final String ADMIN_PWD = 'adminPwd'
 	static private final String SENDER_REGEX = 'senderRegex'
 	static private final String RECIPIENT_REGEX = 'recipientRegex'
+	static private final String ENABLE_STARTTLS = 'enableStarttls'
+	static private final String ENABLE_SMTPS = 'enableSmtps'
+	static private final String KEYSTORE_FILE = 'keystoreFile'
+	static private final String KEYSTORE_PWD = 'keystorePassword'
+	
+	boolean getEnableStarttls() {
+		Boolean.parseBoolean(DataStore.instance.getSetting(ENABLE_STARTTLS, 'false'))
+	}
+	
+	void setEnableStarttls(boolean value) {
+		DataStore.instance.setSetting(ENABLE_STARTTLS, value.toString())
+	}
+	
+	void setEnableStarttls(String value) {
+		setEnableStarttls(Boolean.parseBoolean(value))
+	}
+	
+	boolean getEnableSmtps() {
+		Boolean.parseBoolean(DataStore.instance.getSetting(ENABLE_SMTPS, 'false'))
+	}
+	
+	void setEnableSmtps(boolean value) {
+		DataStore.instance.setSetting(ENABLE_SMTPS, value.toString())
+	}
+	
+	void setEnableSmtps(String value) {
+		setEnableSmtps(Boolean.parseBoolean(value))
+	}
+	
+	File getKeystoreFile() {
+		def path = DataStore.instance.getSetting(KEYSTORE_FILE, null)
+		path ? new File(path) : null
+	}
+	
+	void setKeystoreFile(File f) {
+		DataStore.instance.setSetting(KEYSTORE_FILE, f.absolutePath)
+	}
+	
+	String getKeystorePassword() {
+		def pwd = DataStore.instance.getSetting(KEYSTORE_PWD, null)
+		pwd ?: null
+	}
+	
+	void setKeystorePassword(String pwd) {
+		DataStore.instance.setSetting(KEYSTORE_PWD, pwd)
+	}
 	
 	String getSenderRegex() {
 		DataStore.instance.getSetting(SENDER_REGEX, '')
@@ -121,6 +167,4 @@ class AppSettings {
 	void setSmtpLogLevel(String lvl) {
 		DataStore.instance.setSetting(SMTP_LOG_LVL, lvl)
 	}
-	
-	
 }

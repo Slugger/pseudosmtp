@@ -130,6 +130,22 @@ def config = AppSettings.instance
 						<input type="text" name="port" value="$config.smtpPort" />
 					</div>
 					<div>
+						<label for="starttls">Enable STARTTLS:</label>
+						<input type="checkbox" name="starttls" ${config.enableStarttls ? 'checked="checked"' : ''} />
+					</div>
+					<div>
+						<label for="smtps">Enable SMTPS:</label>
+						<input type="checkbox" name="smtps" ${config.enableSmtps ? 'checked="checked"' : ''} />
+					</div>
+					<div>
+						<label for="keystore">Java Keystore:</label>
+						<input type="text" name="keystore" value="${config.keystoreFile?.absolutePath ?: ''}" />
+					</div>
+					<div>
+						<label for="keystore_pwd">Keystore Password:</label>
+						<input type="password" name="keystore_pwd" value="${config.keystorePassword ?: ''}" />
+					</div>
+					<div>
 						<label for="app_lvl">App log level:</label>
 						<select name="app_lvl">
 							<% ['error', 'warn', 'info', 'debug', 'trace'].each { %>

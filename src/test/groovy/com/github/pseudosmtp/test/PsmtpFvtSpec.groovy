@@ -48,7 +48,7 @@ abstract class PsmtpFvtSpec extends Specification {
 			WEB_PORT = System.getProperty('psmtp.testing.port.web').toInteger()
 			SMTP_PORT = System.getProperty('psmtp.testing.port.smtp').toInteger()
 			WEB_CONTEXT = System.getProperty('psmtp.testing.web.context')
-			def myIp = InetAddress.localHost.toString()
+			def myIp = EXT_HOST != 'localhost' ? InetAddress.localHost.toString() : '/127.0.0.1'
 			myIp = myIp.substring(myIp.indexOf('/') + 1)
 			MY_IP = myIp
 		}
