@@ -34,6 +34,15 @@ class AppSettings {
 	static private final String ENABLE_SMTPS = 'enableSmtps'
 	static private final String KEYSTORE_FILE = 'keystoreFile'
 	static private final String KEYSTORE_PWD = 'keystorePassword'
+	static private final String SMTPS_PORT = 'smtpsPort'
+	
+	int getSmtpsPort() {
+		DataStore.instance.getSetting(SMTPS_PORT, '465').toInteger()
+	}
+	
+	void setSmtpsPort(int port) {
+		DataStore.instance.setSetting(SMTPS_PORT, port.toString())
+	}
 	
 	boolean getEnableStarttls() {
 		Boolean.parseBoolean(DataStore.instance.getSetting(ENABLE_STARTTLS, 'false'))

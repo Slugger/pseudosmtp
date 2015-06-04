@@ -49,6 +49,10 @@ if(BasicAuthHelper.isRequesterAdmin(request)) {
 		val = params.port
 		if(val && val ==~ /\d+/)
 			config.setSmtpPort(val)
+		
+		val = params.smtps_port
+		if(val && val ==~ /\d+/)
+			config.setSmtpsPort(val.toInteger())
 
 		config.setAppLogLevel(params.app_lvl)
 		config.setSmtpLogLevel(params.smtp_lvl)

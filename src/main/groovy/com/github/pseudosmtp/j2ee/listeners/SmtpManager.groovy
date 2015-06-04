@@ -28,6 +28,7 @@ import org.subethamail.smtp.server.SMTPServer
 import com.github.pseudosmtp.AppSettings
 import com.github.pseudosmtp.datastore.DataStore
 import com.github.pseudosmtp.smtp.PsmtpMessageHandlerFactory
+import com.github.pseudosmtp.smtp.SMTPSServer
 
 class SmtpManager implements ServletContextListener {
 
@@ -35,6 +36,7 @@ class SmtpManager implements ServletContextListener {
 	
 	static private volatile boolean svcsStarted = false
 	static private SMTPServer smtpSrv
+	static private SMTPServer smtpsSrv
 	static final Session SMTP_SESSION = Session.getDefaultInstance(new Properties())
 	
 	static void restartSmtpServer() {
@@ -114,6 +116,12 @@ class SmtpManager implements ServletContextListener {
 			LOG.info 'SMTP server stopped!'
 		} else
 			LOG.error 'SMTP server NOT stopped!'
+
+		if(smtpsSrv?.isRunning()) {
+			smtpsSrv.stop()
+			LOG.info 'SMTPS server stopped!'
+		} else if(smtpsSrv)
+			LOG.error 'SMTPS server NOT stopped!'
 	}
 	
 	private void startSmtpServer() {
@@ -123,23 +131,36 @@ class SmtpManager implements ServletContextListener {
 		smtpSrv.port = settings.smtpPort
 		def keystore = settings.keystoreFile
 		if(settings.enableStarttls) {
-			if(!settings.enableSmtps) {
-				if(keystore?.exists()) {
-					def pwd = settings.keystorePassword
-					if(pwd) {
-						System.setProperty('javax.net.ssl.keyStore', keystore.absolutePath)
-						System.setProperty('javax.net.ssl.keyStorePassword', pwd)
-						smtpSrv.setEnableTLS(true)
-						LOG.info 'STARTTLS support enabled'
-					} else
-						LOG.warn 'STARTTLS ignored because keystore password is not set'
+			if(keystore?.exists()) {
+				def pwd = settings.keystorePassword
+				if(pwd) {
+					System.setProperty('javax.net.ssl.keyStore', keystore.absolutePath)
+					System.setProperty('javax.net.ssl.keyStorePassword', pwd)
+					smtpSrv.setEnableTLS(true)
+					LOG.info 'STARTTLS support enabled'
 				} else
-					LOG.warn "STARTTLS ignored because keystore file does not exist [${keystore?.absolutePath}]"
+					LOG.warn 'STARTTLS ignored because keystore password is not set'
 			} else
-				LOG.warn 'STARTTLS ignored because SMTPS is also enabled'
+				LOG.warn "STARTTLS ignored because keystore file does not exist [${keystore?.absolutePath}]"
 		}
 		smtpSrv.start()
 		LOG.info "SMTP server listening on ${smtpSrv.bindAddress ?: '*'}:$smtpSrv.port"
+		if(settings.enableSmtps) {
+			if(keystore?.exists()) {
+				def pwd = settings.keystorePassword
+				if(pwd) {
+					System.setProperty('javax.net.ssl.keyStore', keystore.absolutePath)
+					System.setProperty('javax.net.ssl.keyStorePassword', pwd)
+					smtpsSrv = new SMTPSServer(new PsmtpMessageHandlerFactory())
+					smtpsSrv.bindAddress = settings.smtpBindAddress
+					smtpsSrv.port = settings.smtpsPort
+					smtpsSrv.start()
+					LOG.info "SMTPS server listening on ${smtpsSrv.bindAddress ?: '*'}:$smtpsSrv.port"
+				} else
+					LOG.warn 'SMTPS ignored because keystore password is not set'
+			} else
+				LOG.warn "SMTPS ignored because keystore file does not exist [${keystore?.absolutePath}]"
+		}
 	}
 	
 	@Override

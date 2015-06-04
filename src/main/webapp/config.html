@@ -138,6 +138,10 @@ def config = AppSettings.instance
 						<input type="checkbox" name="smtps" ${config.enableSmtps ? 'checked="checked"' : ''} />
 					</div>
 					<div>
+						<label for="smtps_port">SMTPS port:</label>
+						<input type="text" name="smtps_port" value="$config.smtpsPort" />
+					</div>
+					<div>
 						<label for="keystore">Java Keystore:</label>
 						<input type="text" name="keystore" value="${config.keystoreFile?.absolutePath ?: ''}" />
 					</div>
