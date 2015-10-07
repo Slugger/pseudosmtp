@@ -260,8 +260,19 @@ class DataStore {
 				}
 				sql.execute qry
 			}
-			mimeMsg.getNonMatchingHeaders(['to', 'cc', 'bcc', 'from', 'date'] as String[]).each {
+			mimeMsg.getNonMatchingHeaders(['to', 'cc', 'bcc', 'from', 'date', 'subject'] as String[]).each {
 				qry = "INSERT INTO headers (id, name, value) VALUES ($id, $it.name, $it.value)"
+				if(log.isTraceEnabled()) {
+					def params = sql.getParameters(qry)
+					def qryStr = sql.asSql(qry, params)
+					log.trace "$qryStr $params"
+				}
+				sql.execute qry
+			}
+			// handle subject separately in case of RFC 2047 encoding
+			def subj = mimeMsg.subject
+			if(subj) {
+				qry = "INSERT INTO headers (id, name, value) VALUES ($id, 'Subject', $subj)"
 				if(log.isTraceEnabled()) {
 					def params = sql.getParameters(qry)
 					def qryStr = sql.asSql(qry, params)
