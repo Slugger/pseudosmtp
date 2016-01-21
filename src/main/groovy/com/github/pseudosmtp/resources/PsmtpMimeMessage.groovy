@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Battams, Derek
+ Copyright 2015-2016 Battams, Derek
  
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -97,5 +97,33 @@ class PsmtpMimeMessage {
 	@Path('/{id: \\d+}')
 	void deleteMessage(@Context HttpServletRequest req, @PathParam('id')String id) {
 		DataStore.instance.deleteMessage(id.toLong(), ApiHelper.getClientScope(req))
+	}
+	
+	@GET
+	@Path('/{id: \\d+}/attachments')
+	@Produces(MediaType.APPLICATION_JSON)
+	String listAttachments(@Context HttpServletRequest req, @PathParam('id')String id) {
+		def scope = ApiHelper.getClientScope(req)
+		def attachments = DataStore.instance.getAttachments(id.toLong(), scope)
+		if(attachments.size() > 0) {
+			def baseUrl = req.requestURL.toString()
+			if(!baseUrl.endsWith('/'))
+				baseUrl += '/'
+			attachments.each {
+				it['__url'] = new URL(new URL(baseUrl), "${URLEncoder.encode(it.fileName, 'UTF-8')}?clnt=$scope")
+			}
+			return JsonOutput.toJson(attachments)
+		}
+		throw new WebApplicationException("No attachments for message id $id.", Response.Status.NOT_FOUND)
+	}
+	
+	@GET
+	@Path('/{id: \\d+}/attachments/{fname}')
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	Response getAttachment(@Context HttpServletRequest req, @PathParam('id')String id, @PathParam('fname')String fileName) {
+		InputStream attach = DataStore.instance.getAttachment(id.toLong(), fileName, ApiHelper.getClientScope(req))
+		if(attach)
+			return Response.ok(attach).build()
+		throw new WebApplicationException("No attachment named '$fileName' associated with MimeMessage #$id.", Response.Status.NOT_FOUND)
 	}
 }

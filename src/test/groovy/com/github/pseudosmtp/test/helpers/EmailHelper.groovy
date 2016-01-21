@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Battams, Derek
+ Copyright 2015-2016 Battams, Derek
  
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ import javax.mail.Session
 import javax.mail.Transport
 import javax.mail.Message.RecipientType
 import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeBodyPart
 import javax.mail.internet.MimeMessage
+import javax.mail.internet.MimeMultipart
 
 import com.github.pseudosmtp.test.PsmtpFvtSpec
 
@@ -50,10 +52,34 @@ class EmailHelper {
 		return mime
 	}
 	
+	static MimeMessage createQuickMessageWithAttachment(String from, String subject, String msg, String fileName, List to = null, List cc = null, List bcc = null, Session session = SMTP_SESSION) {
+		def mimeMsg = createQuickMessage(from, subject, msg, to, cc, bcc, session)
+		
+		def mimeMultipart = new MimeMultipart()
+		
+		def txtPart = new MimeBodyPart()
+		txtPart.setContent(msg, 'text/plain')
+		mimeMultipart.addBodyPart(txtPart)
+		
+		def attachPart = new MimeBodyPart()
+		final def file = new File(File.createTempDir(), fileName)
+		Runtime.runtime.addShutdownHook { file.parentFile.deleteDir() }
+		file << 'abc'
+		attachPart.attachFile(file)
+		mimeMultipart.addBodyPart(attachPart)
+		
+		mimeMsg.content = mimeMultipart
+		mimeMsg
+	}
+	
 	static void sendQuickMessage(String from, String subject, String msg, List to = null, List cc = null, List bcc = null, Session session = SMTP_SESSION) {
 		Transport.send(createQuickMessage(from, subject, msg, to, cc, bcc, session))
 	}
-
+	
+	static void sendQuickMessageWithAttachment(String from, String subject, String msg, String fileName, List to = null, List cc = null, List bcc = null, Session session = SMTP_SESSION) {
+		Transport.send(createQuickMessageWithAttachment(from, subject, msg, fileName, to, cc, bcc, session))
+	}
+	
 	private EmailHelper() {}
 
 }

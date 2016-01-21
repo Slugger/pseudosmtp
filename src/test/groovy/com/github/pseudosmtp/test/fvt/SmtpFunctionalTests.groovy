@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Battams, Derek
+ Copyright 2015-2016 Battams, Derek
  
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package com.github.pseudosmtp.test.fvt
 
+import javax.mail.BodyPart
+import javax.mail.Multipart
+import javax.mail.Part
 import javax.mail.SendFailedException
 import javax.mail.internet.MimeMessage
 
@@ -96,5 +99,29 @@ class SmtpFunctionalTests extends PsmtpFvtSpec {
 			restClnt.getAll().size() == 1
 		cleanup:
 			AppSettings.instance.recipientRegex = origRegex
+	}
+	
+	def 'Ensure mail with attachments is accepted'() {
+		setup:
+			assert restClnt.getAll().size() == 0
+		when: 'an email with an attachment is sent'
+			EmailHelper.sendQuickMessageWithAttachment('sender@localhost', 'Test Attachment', 'An attachment email', 'foo.txt', ['user@localhost'])
+		then: 'the email is received and the attachment is present'
+			restClnt.all.size() == 1
+			restClnt.all[0]._attachments == 1
+		when: 'the email is downloaded'
+			def msg = new MimeMessage(SmtpManager.SMTP_SESSION, restClnt[restClnt.all[0].id])
+			Multipart content = msg.content
+		and: 'the attachment is searched for'
+			def attachmentFound = false
+			for(int i = 0; i < content.count; ++i) {
+				BodyPart bp = content.getBodyPart(i)
+				if(Part.ATTACHMENT.equalsIgnoreCase(bp.disposition) && bp.fileName == 'foo.txt') {
+					attachmentFound = true
+					break
+				}
+			}
+		then: 'the attachment is found'
+			attachmentFound == true
 	}
 }

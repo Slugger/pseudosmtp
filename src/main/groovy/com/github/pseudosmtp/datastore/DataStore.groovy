@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Battams, Derek
+ Copyright 2015-2016 Battams, Derek
  
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import groovy.sql.Sql
 import groovy.util.logging.Log4j
 
 import java.sql.SQLException
-import java.sql.Types
 
+import javax.mail.BodyPart
+import javax.mail.Multipart
+import javax.mail.Part
 import javax.mail.Message.RecipientType
 import javax.mail.internet.MimeMessage
 
@@ -70,6 +72,20 @@ class DataStore {
 			log.info 'New database created'
 		} else
 			log.info 'Connected to existing database'
+	}
+
+	synchronized List getAttachments(long msgId, String clnt) {
+		def qry = "SELECT * FROM message AS m LEFT OUTER JOIN attachments AS a ON m.id = a.id WHERE m.id = $msgId AND client = $clnt"
+		if(log.isTraceEnabled()) {
+			def params = sql.getParameters(qry)
+			def qryStr = sql.asSql(qry, params)
+			log.trace "$qryStr $params"
+		}
+		def attachments = []
+		sql.eachRow(qry) {
+			attachments << [id: it.id, fileName: it.file_name, mimeType: it.mime_type, size: it.size]
+		}
+		attachments
 	}
 
 	synchronized List findByClient(String clnt, QueryBuilder qb = null) {
@@ -163,6 +179,19 @@ class DataStore {
 		if(bcc.size() > 0)
 			log.debug "Message #$id BCC: ${bcc.join(',')}"
 		return data ? buildMsg(data, bcc) : null
+	}
+	
+	InputStream getAttachment(long id, String fileName, String clnt) {
+		MimeMessage mime = new MimeMessage(SmtpManager.SMTP_SESSION, findById(id, clnt))
+		if(mime) {
+			Multipart mp = mime.content
+			for(int i = 0; i < mp.count; ++i) {
+				BodyPart bp = mp.getBodyPart(i)
+				if(Part.ATTACHMENT.equalsIgnoreCase(bp.disposition) && bp.fileName == fileName)
+					return bp.inputStream
+			}
+		}
+		null
 	}
 	
 	synchronized String getSetting(String name, String defaultValue = null) {
