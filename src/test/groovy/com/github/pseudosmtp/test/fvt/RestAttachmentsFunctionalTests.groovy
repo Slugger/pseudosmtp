@@ -34,26 +34,22 @@ class RestAttachmentsFunctionalTests extends PsmtpFvtSpec {
 			msgs.size() == 1
 			msgs[0].id > 0
 			msgs[0]._attachments == 1
-		when: 'the attachments are requested for the email'
-			def attachments = restClnt.attachments(msgs[0].id)
-		then: 'the attachments are returned'
-			attachments.size() == 1
+			msgs[0]._attachmentInfo.size() == 1
+			msgs[0]._attachmentInfo[0].fileName.size() > 0
 	}
 	
 	def 'Attachments can be fetched'() {
 		when: 'the email is searched for fetched'
 			def msg = restClnt.getAll([has_attachment: 'true'])[0]
-		and: 'the attachment is fetched'
-			def attach = restClnt.attachments(msg.id)
 		and: 'the attachment is downloaded'
-			InputStream is = new URL(attach[0].__url).content
+			InputStream is = new URL(msg['_attachmentInfo'][0].__url).content
 		then: 'the attachment is received as expected'
 			is.getText() == 'abc'
 	}
 	
 	def 'Invalid attachments return 404'() {
 		when: 'an invalid attachment is requested'
-			new URL(restClnt.attachments(restClnt.getAll([has_attachment: 'true'])[0].id)[0].__url.replace('foobar', 'zoobar')).content
+			new URL(restClnt.getAll([has_attachment: 'true'])[0]['_attachmentInfo'][0].__url.replace('foobar', 'zoobar')).content
 		then: 'a 404 is returned'
 			thrown(FileNotFoundException)
 	}

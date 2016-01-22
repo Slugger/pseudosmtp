@@ -70,15 +70,5 @@ class PsmtpRestClient {
 	
 	boolean delete(int id, String clntScope = null) {
 		clnt.delete([path: "messages/$id", query: [clnt: clntScope ?: defaultScope]])
-	}
-	
-	List attachments(int id, String clntScope = null) {
-		try {
-			return clnt.get([path: "messages/$id/attachments", query: [clnt: clntScope ?: defaultScope]]).data
-		} catch(HttpResponseException e) {
-			if(e.statusCode == 404)
-				return null
-			throw e
-		}
-	}
+	}	
 }

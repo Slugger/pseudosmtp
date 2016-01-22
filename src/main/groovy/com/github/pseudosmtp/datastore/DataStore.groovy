@@ -74,20 +74,6 @@ class DataStore {
 			log.info 'Connected to existing database'
 	}
 
-	synchronized List getAttachments(long msgId, String clnt) {
-		def qry = "SELECT * FROM message AS m LEFT OUTER JOIN attachments AS a ON m.id = a.id WHERE m.id = $msgId AND client = $clnt"
-		if(log.isTraceEnabled()) {
-			def params = sql.getParameters(qry)
-			def qryStr = sql.asSql(qry, params)
-			log.trace "$qryStr $params"
-		}
-		def attachments = []
-		sql.eachRow(qry) {
-			attachments << [id: it.id, fileName: it.file_name, mimeType: it.mime_type, size: it.size]
-		}
-		attachments
-	}
-
 	synchronized List findByClient(String clnt, QueryBuilder qb = null) {
 		def qry = new StringBuilder('SELECT DISTINCT m.id FROM message AS m LEFT OUTER JOIN recipients AS r ON m.id = r.id LEFT OUTER JOIN headers AS h ON m.id = h.id LEFT OUTER JOIN attachments AS a ON m.id = a.id WHERE client = ?')
 		def params
@@ -114,8 +100,14 @@ class DataStore {
 				record.sender = it.sender
 			}
 			
-			def attachQry = "SELECT file_name FROM attachments WHERE id = $id"
-			record.'_attachments' = sql.rows(attachQry).size()
+			def attachQry = "SELECT * FROM attachments WHERE id = $id"
+			def attachData = []
+			sql.eachRow(attachQry) {
+				def attachEntry = [fileName: it.file_name, mimeType: it.mime_type, size: it.size]
+				attachData << attachEntry
+			}
+			record.'_attachments' = attachData.size()
+			record.'_attachmentInfo' = attachData
 			
 			def recpQry = "SELECT type, email FROM recipients WHERE id = $id"
 			sql.eachRow(recpQry) {
@@ -341,7 +333,7 @@ class DataStore {
 					id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1) PRIMARY KEY,
 					client VARCHAR(45) NOT NULL,
 					sent TIMESTAMP NOT NULL,
-					sender VARCHAR(128) NOT NULL,
+					sender VARCHAR(512) NOT NULL,
 					data BLOB NOT NULL
 				)
 			'''
@@ -350,7 +342,7 @@ class DataStore {
 				CREATE TABLE recipients (
 					id BIGINT NOT NULL,
 					type VARCHAR(3) NOT NULL,
-					email VARCHAR(128) NOT NULL,
+					email VARCHAR(512) NOT NULL,
 					CONSTRAINT RECPT_MSG_FK FOREIGN KEY (id) REFERENCES message(id) ON DELETE CASCADE
 				)
 			'''
@@ -358,8 +350,8 @@ class DataStore {
 			sql.execute '''
 				CREATE TABLE attachments (
 					id BIGINT NOT NULL,
-					file_name VARCHAR(64) NOT NULL,
-					mime_type VARCHAR(64) NOT NULL,
+					file_name VARCHAR(1024) NOT NULL,
+					mime_type VARCHAR(1024) NOT NULL,
 					size INTEGER NOT NULL,
 					CONSTRAINT ATTACH_MSG_FK FOREIGN KEY (id) REFERENCES message(id) ON DELETE CASCADE
 				)
@@ -368,16 +360,16 @@ class DataStore {
 			sql.execute '''
 				CREATE TABLE headers (
 					id BIGINT NOT NULL,
-					name VARCHAR(64) NOT NULL,
-					value VARCHAR(4096) NOT NULL,
+					name VARCHAR(1024) NOT NULL,
+					value VARCHAR(8192) NOT NULL,
 					CONSTRAINT HDR_MSG_FK FOREIGN KEY (id) REFERENCES message(id) ON DELETE CASCADE
 				)
 			'''
 			
 			sql.execute '''
 				CREATE TABLE settings (
-					name VARCHAR(64) NOT NULL PRIMARY KEY,
-					value VARCHAR(128)
+					name VARCHAR(512) NOT NULL PRIMARY KEY,
+					value VARCHAR(4096)
 				)
 			'''
 		}

@@ -50,6 +50,9 @@ class PsmtpMimeMessage {
 				baseUrl += '/'
 			objs.each {
 				it['__url'] = new URL(new URL(baseUrl), "${it.id}?clnt=$scope")
+				it['_attachmentInfo'].each { a ->
+					a['__url'] = new URL(new URL(baseUrl), "${it.id}/attachments/${URLEncoder.encode(a['fileName'], 'UTF-8')}?clnt=$scope")
+				}
 			}
 			return JsonOutput.toJson(objs)
 		}
@@ -98,25 +101,7 @@ class PsmtpMimeMessage {
 	void deleteMessage(@Context HttpServletRequest req, @PathParam('id')String id) {
 		DataStore.instance.deleteMessage(id.toLong(), ApiHelper.getClientScope(req))
 	}
-	
-	@GET
-	@Path('/{id: \\d+}/attachments')
-	@Produces(MediaType.APPLICATION_JSON)
-	String listAttachments(@Context HttpServletRequest req, @PathParam('id')String id) {
-		def scope = ApiHelper.getClientScope(req)
-		def attachments = DataStore.instance.getAttachments(id.toLong(), scope)
-		if(attachments.size() > 0) {
-			def baseUrl = req.requestURL.toString()
-			if(!baseUrl.endsWith('/'))
-				baseUrl += '/'
-			attachments.each {
-				it['__url'] = new URL(new URL(baseUrl), "${URLEncoder.encode(it.fileName, 'UTF-8')}?clnt=$scope")
-			}
-			return JsonOutput.toJson(attachments)
-		}
-		throw new WebApplicationException("No attachments for message id $id.", Response.Status.NOT_FOUND)
-	}
-	
+		
 	@GET
 	@Path('/{id: \\d+}/attachments/{fname}')
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
