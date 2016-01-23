@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Battams, Derek
+ Copyright 2015-2016 Battams, Derek
  
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -31,6 +31,12 @@ import com.github.pseudosmtp.smtp.PsmtpMessageHandlerFactory
 import com.github.pseudosmtp.smtp.SMTPSServer
 
 class SmtpManager implements ServletContextListener {
+	
+	static { // handle attachment filename encoding for JavaMail APIs
+		System.setProperty('mail.mime.encodefilename', 'true')
+		System.setProperty('mail.mime.decodefilename', 'true')
+		System.setProperty('mail.mime.charset', 'UTF-8')
+	}
 
 	static private SmtpManager SELF = null
 	

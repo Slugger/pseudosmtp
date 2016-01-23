@@ -22,9 +22,11 @@ import com.github.pseudosmtp.test.PsmtpFvtSpec
 import com.github.pseudosmtp.test.helpers.EmailHelper
 
 class RestAttachmentsFunctionalTests extends PsmtpFvtSpec {
+	
+	static private String ATTACH_NAME = '\u053B.txt'
 
 	def setup() {
-		EmailHelper.sendQuickMessageWithAttachment("asender@localhost.com", "Test Message With Attachment", "This is test message with attachment.", 'foobar.txt', ["areceiver@localhost.com"])
+		EmailHelper.sendQuickMessageWithAttachment("asender@localhost.com", "Test Message With Attachment", "This is test message with attachment.", ATTACH_NAME, ["areceiver@localhost.com"])
 	}
 	
 	def 'Attachments are properly listed'() {
@@ -35,7 +37,7 @@ class RestAttachmentsFunctionalTests extends PsmtpFvtSpec {
 			msgs[0].id > 0
 			msgs[0]._attachments == 1
 			msgs[0]._attachmentInfo.size() == 1
-			msgs[0]._attachmentInfo[0].fileName.size() > 0
+			msgs[0]._attachmentInfo[0].fileName == ATTACH_NAME
 	}
 	
 	def 'Attachments can be fetched'() {
@@ -49,7 +51,7 @@ class RestAttachmentsFunctionalTests extends PsmtpFvtSpec {
 	
 	def 'Invalid attachments return 404'() {
 		when: 'an invalid attachment is requested'
-			new URL(restClnt.getAll([has_attachment: 'true'])[0]['_attachmentInfo'][0].__url.replace('foobar', 'zoobar')).content
+			new URL(restClnt.getAll([has_attachment: 'true'])[0]['_attachmentInfo'][0].__url.replace('.txt', '.text')).content
 		then: 'a 404 is returned'
 			thrown(FileNotFoundException)
 	}
