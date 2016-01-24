@@ -14,6 +14,10 @@
 	limitations under the License.
 */
 
+versioning {
+	releaseMode = 'snapshot'
+}
+
 sourceCompatibility = 1.7
 version = versioning.info.display
 
