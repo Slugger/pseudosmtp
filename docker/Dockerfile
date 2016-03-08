@@ -15,11 +15,12 @@
 #
 FROM jetty:9-jre7
 MAINTAINER derek@battams.ca
-COPY war/*.war /var/lib/jetty/webapps/
+RUN mkdir -p /home/jetty
+COPY war/*.war /var/lib/jetty/webapps/psmtp.war
 COPY conf/etc/* /etc/
 COPY conf/default/* /etc/default/
 COPY scripts/* /usr/local/jetty/bin/
 RUN chmod 755 /usr/local/jetty/bin/*
-RUN chown -R jetty.jetty /var/lib/jetty/webapps
-EXPOSE 8080 8000
+RUN chown -R jetty.jetty /var/lib/jetty/webapps /home/jetty
+EXPOSE 8080 2525 8000
 CMD /usr/local/jetty/bin/jetty.sh run
