@@ -51,7 +51,9 @@
 							td(msg.cc.join(', '))
 							td(msg.bcc.join(', '))
 							td(msg.sender)
-							td(msg.Subject)
+							td {
+								a(href: msg.__url, msg.Subject)
+							}
 							def sent = Date.parse('yyyy-MM-dd\'T\'HH:mm:ssZ', msg.sent)
 							td(sent.format('MMM d H:mm:ss'), value: sent.time)
 						}
