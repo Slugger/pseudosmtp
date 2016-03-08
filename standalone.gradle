@@ -35,3 +35,28 @@ sourceSets {
 		resources.srcDirs = ['src/main/resources', 'src/main/webapp']
 	}
 }
+
+task cpWarToDocker(type: Copy) {
+	def outDir = new File(project.buildDir, 'docker/war')
+	dependsOn war
+	from(new File(project.buildDir, 'libs').absolutePath) {
+		include war.archiveName
+	}
+	into(outDir.absolutePath)
+	outputs.files(new File(outDir, war.archiveName))
+}
+
+task setupDockerEnv(type: Copy) {
+	from(new File(project.projectDir, 'docker'))
+	into(new File(project.buildDir, 'docker'))
+}
+
+task mkDockerImg(type: Exec) {
+	dependsOn setupDockerEnv, cpWarToDocker
+	workingDir = new File(project.buildDir, 'docker')
+	commandLine 'docker', 'build', '-t', 'slugger/pseudosmtp', '.'
+	doFirst {
+		if(!System.getProperty('os.name').toLowerCase().contains('linux'))
+			throw new UnsupportedOperationException('Can only build docker images on Linux!')
+	}
+}
