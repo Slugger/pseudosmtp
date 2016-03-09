@@ -11,7 +11,7 @@ if(params.clnt) {
 		request.setAttribute('metadata', data)
 	} catch(HttpResponseException e) {
 		if(e.statusCode == 404) // empty mailbox
-			request.setAttbiute('metadata', [])
+			request.setAttribute('metadata', [])
 		else
 			throw e
 	}
