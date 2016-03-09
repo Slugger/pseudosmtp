@@ -34,30 +34,39 @@
 					</tr>
 				</thead>
 				<% mb.tbody {
-					metadata.each { msg ->
-						tr {
-							def icons = []
-							if(msg._attachments)
-								icons << 'fa-paperclip'
-							if(msg._important)
-								icons << 'fa-exclamation'
-							if(icons) {
+					if(metadata.size())
+						metadata.each { msg ->
+							tr {
+								def icons = []
+								if(msg._attachments)
+									icons << 'fa-paperclip'
+								if(msg._important)
+									icons << 'fa-exclamation'
+								if(icons) {
+									td {
+										icons.each { span(class: "fa $it") }
+									}
+								} else
+									td(' ')
+								td(msg.to.join(', '))
+								td(msg.cc.join(', '))
+								td(msg.bcc.join(', '))
+								td(msg.sender)
 								td {
-									icons.each { span(class: "fa $it") }
+									a(href: msg.__url.replaceAll('localhost', request.getAttribute('remoteHost')), msg.Subject)
 								}
-							} else
-								td(' ')
-							td(msg.to.join(', '))
-							td(msg.cc.join(', '))
-							td(msg.bcc.join(', '))
-							td(msg.sender)
-							td {
-								a(href: msg.__url.replaceAll('localhost', request.getAttribute('remoteHost')), msg.Subject)
+								def sent = Date.parse('yyyy-MM-dd\'T\'HH:mm:ssZ', msg.sent)
+								td(sent.format('MMM d H:mm:ss'), value: sent.time)
 							}
-							def sent = Date.parse('yyyy-MM-dd\'T\'HH:mm:ssZ', msg.sent)
-							td(sent.format('MMM d H:mm:ss'), value: sent.time)
 						}
-					}
+					else
+						tr {
+							td(colspan: '6') {
+								b {
+									i('Mailbox is empty!')
+								}
+							}
+						}
 				} %>
 			</table>
 		</div>
